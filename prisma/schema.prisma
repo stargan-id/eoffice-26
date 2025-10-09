@@ -84,6 +84,7 @@ model User {
   password       String?
   emailVerified  DateTime?       @map("email_verified")
   image          String?
+  status         StatusUser      @default(ACTIVE) @map("status_aktif")
   sessions       Session[]
   NIP            String?         @unique @map("nip")
   organisasiId   String?         @map("organisasi_id")
@@ -134,6 +135,13 @@ model VerificationToken {
 
   @@id([identifier, token])
   @@map("verification_tokens")
+}
+
+enum StatusUser {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  LOCKED
 }
 
 enum StatusAktif {

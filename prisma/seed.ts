@@ -258,7 +258,7 @@ async function main() {
   const superAdmin = await db.user.create({
     data: {
       name: 'Super Administrator',
-      email: 'superadmin@jagagizi.stargan.id',
+      email: 'superadmin@stargan.id',
       password: hashedPassword,
       NIP: '198001012005011001',
       organisasiId: rootOrg.id,
@@ -269,7 +269,7 @@ async function main() {
   const admin = await db.user.create({
     data: {
       name: 'Administrator Gizi',
-      email: 'admin@jagagizi.stargan.id',
+      email: 'admin@stargan.id',
       password: hashedPassword,
       NIP: '198505152010012002',
       organisasiId: dirGiziOrg.id,
@@ -280,7 +280,7 @@ async function main() {
   const manager = await db.user.create({
     data: {
       name: 'Manager Program Gizi',
-      email: 'manager@jagagizi.stargan.id',
+      email: 'manager@stargan.id',
       password: hashedPassword,
       NIP: '199001012015022001',
       organisasiId: dirGiziOrg.id,
@@ -291,7 +291,7 @@ async function main() {
   const operator = await db.user.create({
     data: {
       name: 'Operator Data Gizi',
-      email: 'operator@jagagizi.stargan.id',
+      email: 'operator@stargan.id',
       password: hashedPassword,
       NIP: '199505052018032001',
       organisasiId: dinkesOrg.id,
@@ -302,7 +302,7 @@ async function main() {
   const regularUser = await db.user.create({
     data: {
       name: 'Petugas Gizi Puskesmas',
-      email: 'user@jagagizi.stargan.id',
+      email: 'user@stargan.id',
       password: hashedPassword,
       NIP: '200001012023012001',
       organisasiId: dinkesOrg.id,
@@ -423,11 +423,11 @@ async function main() {
   console.log(`   • ${await db.userPreference.count()} User preferences`);
   
   console.log('\n👤 Default Users Created:');
-  console.log('   • superadmin@jagagizi.stargan.id (Super Admin) - Password: Admin@123!');
-  console.log('   • admin@jagagizi.stargan.id (Admin) - Password: Admin@123!');
-  console.log('   • manager@jagagizi.stargan.id (Manager) - Password: Admin@123!');
-  console.log('   • operator@jagagizi.stargan.id (Operator) - Password: Admin@123!');
-  console.log('   • user@jagagizi.stargan.id (User) - Password: Admin@123!');
+  console.log('   • superadmin@stargan.id (Super Admin) - Password: Admin@123!');
+  console.log('   • admin@stargan.id (Admin) - Password: Admin@123!');
+  console.log('   • manager@stargan.id (Manager) - Password: Admin@123!');
+  console.log('   • operator@stargan.id (Operator) - Password: Admin@123!');
+  console.log('   • user@stargan.id (User) - Password: Admin@123!');
 }
 
 main()
