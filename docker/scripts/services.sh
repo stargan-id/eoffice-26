@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# myapp Docker Services Management Script
+# eoffice Docker Services Management Script
 # Usage: ./docker/scripts/services.sh [start|start-all|start-mailpit|stop|stop-all|restart|logs|backup|restore|reset]
 
 set -e
@@ -61,7 +61,7 @@ start_database() {
     # Wait for database to be healthy
     timeout=30
     while [ $timeout -gt 0 ]; do
-        if docker exec myapp-postgres pg_isready -U myapp_user &> /dev/null; then
+        if docker exec eoffice-postgres pg_isready -U eoffice_user &> /dev/null; then
             log_info "Database is ready!"
             break
         fi
@@ -75,7 +75,7 @@ start_database() {
     fi
     
     log_info "PostgreSQL is running on port 5432"
-    log_info "Connection string: postgresql://myapp_user:PASSWORD@localhost:5432/myapp_db"
+    log_info "Connection string: postgresql://eoffice_user:PASSWORD@localhost:5432/eoffice_db"
 }
 
 stop_database() {
@@ -107,12 +107,12 @@ backup_db() {
     
     log_info "Creating database backup: $backup_file"
     
-    if ! docker exec myapp-postgres pg_isready -U myapp_user &> /dev/null; then
+    if ! docker exec eoffice-postgres pg_isready -U eoffice_user &> /dev/null; then
         log_error "Database is not running"
         exit 1
     fi
     
-    docker exec myapp-postgres pg_dump -U myapp_user -d myapp_db > "$backup_file"
+    docker exec eoffice-postgres pg_dump -U eoffice_user -d eoffice_db > "$backup_file"
     
     log_info "Backup created: $backup_file"
 }
@@ -141,13 +141,13 @@ restore_db() {
         exit 0
     fi
     
-    if ! docker exec myapp-postgres pg_isready -U myapp_user &> /dev/null; then
+    if ! docker exec eoffice-postgres pg_isready -U eoffice_user &> /dev/null; then
         log_error "Database is not running"
         exit 1
     fi
     
     log_info "Restoring database from $backup_file..."
-    docker exec -i myapp-postgres psql -U myapp_user -d myapp_db < "$backup_file"
+    docker exec -i eoffice-postgres psql -U eoffice_user -d eoffice_db < "$backup_file"
     
     log_info "Database restored successfully"
 }
@@ -215,7 +215,7 @@ stop_all() {
 }
 
 show_help() {
-    echo "myapp Docker Services Management Script"
+    echo "eoffice Docker Services Management Script"
     echo ""
     echo "Usage: $0 [COMMAND] [OPTIONS]"
     echo ""

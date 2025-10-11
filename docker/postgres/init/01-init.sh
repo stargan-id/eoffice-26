@@ -13,8 +13,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;
     
     -- Create a test database for development/testing
-    CREATE DATABASE myapp_test_db;
-    GRANT ALL PRIVILEGES ON DATABASE myapp_test_db TO $POSTGRES_USER;
+    CREATE DATABASE eoffice_test_db;
+    GRANT ALL PRIVILEGES ON DATABASE eoffice_test_db TO $POSTGRES_USER;
 EOSQL
 
 echo "PostgreSQL initialization completed successfully!"

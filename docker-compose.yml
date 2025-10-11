@@ -1,11 +1,11 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: ${POSTGRES_CONTAINER_NAME:-myapp-postgres}
+    container_name: ${POSTGRES_CONTAINER_NAME:-eoffice-postgres}
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-myapp_db}
-      POSTGRES_USER: ${POSTGRES_USER:-myapp_user}
+      POSTGRES_DB: ${POSTGRES_DB:-eoffice_db}
+      POSTGRES_USER: ${POSTGRES_USER:-eoffice_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
@@ -14,9 +14,9 @@ services:
       # - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init:/docker-entrypoint-initdb.d
     networks:
-      - myapp_network
+      - eoffice_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-myapp_user} -d ${POSTGRES_DB:-myapp_db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-eoffice_user} -d ${POSTGRES_DB:-eoffice_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,7 +24,7 @@ services:
   # Mailpit for email testing
   mailpit:
     image: axllent/mailpit:latest
-    container_name: ${MAILPIT_CONTAINER_NAME:-myapp-mailpit}
+    container_name: ${MAILPIT_CONTAINER_NAME:-eoffice-mailpit}
     restart: unless-stopped
     ports:
       - "${MAILPIT_WEB_PORT:-8025}:8025"    # Web interface
@@ -37,7 +37,7 @@ services:
     volumes:
       - mailpit_data:/data
     networks:
-      - myapp_network
+      - eoffice_network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8025/api/v1/info"]
       interval: 30s
@@ -51,5 +51,5 @@ volumes:
     driver: local
 
 networks:
-  myapp_network:
+  eoffice_network:
     driver: bridge
