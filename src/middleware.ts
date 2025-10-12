@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { DEFAULT_ROUTE_AFTER_LOGIN, isLoginRoute } from "@/route";
+import { DEFAULT_ROUTE_AFTER_LOGIN, isLoginRoute } from "@/route-with-sub";
 export const middleware = auth(async (req) => {
   try {
     console.log("[MIDDLEWARE] time", Date.now());

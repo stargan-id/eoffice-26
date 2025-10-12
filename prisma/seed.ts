@@ -1,6 +1,145 @@
+
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
-import { StatusAktif } from '@prisma/client';
+import { Status, StatusOrganisasi } from '@prisma/client';
+
+// Modular ID generators
+function generateOrgId({ year=25, month="01", a = 1, b = 1, c = 1, d = 1, e = 1 }) {
+  // YYMM + AxxBxxCxxDxxExx
+  const YY = String(year).slice(-2);
+  const MM = String(month).padStart(2, '0');
+  return `${YY}${MM}A${String(a).padStart(2, '2')}B${String(b).padStart(2, '2')}C${String(c).padStart(2, '2')}D${String(d).padStart(2, '2')}E${String(e).padStart(2, '2')}`;
+}
+
+function generateJabatanId({ year=25, month="01", f = 1, urut = 1 }) {
+  // YYMMFxxx
+  const YY = String(year).slice(-2);
+  const MM = String(month).padStart(2, '0');
+  return `${YY}${MM}F${String(urut).padStart(3, '0')}`;
+}
+
+// Modular seeder functions
+async function seedOrganizations() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const m = now.getMonth() + 1;
+  const month = String(m).padStart(2, '0');
+
+  const orgs = [
+    {
+      id: generateOrgId({ year, month, a: 0 }),
+      nama: 'Badan Gizi Nasional',
+      singkatan: 'BGN',
+      status: StatusOrganisasi.AKTIF,
+      tingkat: 0,
+      createdBy: 'system',
+    },
+    {
+      id: generateOrgId({ year, month, a: 1 }),
+      nama: 'Sekretariat Utama',
+      singkatan: 'SETTAMA',
+      status: Status.AKTIF,
+      tingkat: 1,
+      indukOrganisasiId: generateOrgId({ year, month, a: 0 }),
+      createdBy: 'system',
+    },
+    {
+      id: generateOrgId({ year, month, a: 2 }),
+      nama: 'Inspektorat Utama',
+      singkatan: 'ITTAMA',
+      status: Status.AKTIF,
+      tingkat: 1,
+      indukOrganisasiId: generateOrgId({ year, month, a: 0 }),
+      createdBy: 'system',
+    },
+    {
+      id: generateOrgId({ year, month, a: 2 }),
+      nama: 'Inspektorat I',
+      singkatan: 'IT I',
+      status: Status.AKTIF,
+      tingkat: 2,
+      indukOrganisasiId: generateOrgId({ year, month, a: 2 }),
+      createdBy: 'system',
+    },
+    {
+      id: generateOrgId({ year, month, a: 2 }),
+      nama: 'Inspektorat II',
+      singkatan: 'IT II',
+      status: Status.AKTIF,
+      tingkat: 2,
+      indukOrganisasiId: generateOrgId({ year, month, a: 2 }),
+      createdBy: 'system',
+    },
+    {
+      id: generateOrgId({ year, month, a: 2 }),
+      nama: 'Inspektorat III',
+      singkatan: 'IT III',
+      status: Status.AKTIF,
+      tingkat: 2,
+      indukOrganisasiId: generateOrgId({ year, month, a: 2 }),
+      createdBy: 'system',
+    },
+    {
+      id: generateOrgId({ year, month, a: 3 }),
+      nama: 'Deputi Bidang Sistem dan Tata Kelola',
+      singkatan: 'DEPUTI STK',
+      status: Status.AKTIF,
+      tingkat: 1,
+      indukOrganisasiId: generateOrgId({ year, month, a: 0 }),
+      createdBy: 'system',
+    },
+    {
+      id: generateOrgId({ year, month, a: 4 }),
+      nama: 'Depui Bidang Penyediaan dan Penyaluran',
+      singkatan: 'DEPUTI PP',
+      status: Status.AKTIF,
+      tingkat: 1,
+      indukOrganisasiId: generateOrgId({ year, month, a: 0 }),
+      createdBy: 'system',
+    },
+    {
+      id: generateOrgId({ year, month, a: 5 }),
+      nama: 'Deputi Bidang Promosi dan Kerja Sama',
+      singkatan: 'DEPUTI PK',
+      status: Status.AKTIF,
+      tingkat: 1,
+      indukOrganisasiId: generateOrgId({ year, month, a: 0 }),
+      createdBy: 'system',
+    },
+    {
+      id: generateOrgId({ year, month, a: 6 }),
+      nama: 'Deputi Bidang Pemantauan dan Pengawasan',
+      singkatan: 'DEPUTI P2',
+      status: Status.AKTIF,
+      tingkat: 1,
+      indukOrganisasiId: generateOrgId({ year, month, a: 0 }),
+      createdBy: 'system',
+    },
+  ];
+  return Promise.all(orgs.map((org) => db.organisasi.create({ data: org })));
+}
+
+async function seedJabatan() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const m = now.getMonth() + 1;
+  const month = String(m).padStart(2, '0');
+  // Contoh jabatan: Menteri
+  return db.jabatan.create({
+    data: {
+      id: generateJabatanId({ year, month, f: 1, urut: 1 }),
+      namaJabatan: 'Menteri',
+      singkatan: 'Men',
+      status: Status.AKTIF,
+      level: 1,
+      organisasiId: generateOrgId({ year, month, a: 1 }),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+}
+
+// ...modular seeder lain (roles, permissions, users, dsb.)
 
 
 async function main() {
@@ -27,7 +166,7 @@ async function main() {
     data: {
       nama: 'Kementerian Kesehatan RI',
       singkatan: 'KEMENKES',
-      status: StatusAktif.AKTIF,
+      status: Status.AKTIF,
       tingkat: 1,
       createdBy: 'system',
     },
@@ -37,7 +176,7 @@ async function main() {
     data: {
       nama: 'Direktorat Jenderal Kesehatan Masyarakat',
       singkatan: 'DITJEN KESMAS',
-      status: StatusAktif.AKTIF,
+      status: Status.AKTIF,
       tingkat: 2,
       indukOrganisasiId: rootOrg.id,
       createdBy: 'system',
@@ -48,7 +187,7 @@ async function main() {
     data: {
       nama: 'Direktorat Gizi dan Kesehatan Ibu Anak',
       singkatan: 'DIT GIZI KIA',
-      status: StatusAktif.AKTIF,
+      status: Status.AKTIF,
       tingkat: 3,
       indukOrganisasiId: dirjenOrg.id,
       createdBy: 'system',
@@ -59,7 +198,7 @@ async function main() {
     data: {
       nama: 'Dinas Kesehatan DKI Jakarta',
       singkatan: 'DINKES DKI',
-      status: StatusAktif.AKTIF,
+      status: Status.AKTIF,
       tingkat: 3,
       indukOrganisasiId: rootOrg.id,
       createdBy: 'system',
