@@ -78,23 +78,33 @@ model UserRole {
 }
 
 model User {
-  id             String          @id @default(cuid())
-  name           String
-  email          String          @unique
-  password       String?
-  emailVerified  DateTime?       @map("email_verified")
-  image          String?
-  status         StatusUser      @default(ACTIVE) @map("status_aktif")
-  sessions       Session[]
-  NIP            String?         @unique @map("nip")
-  organisasiId   String?         @map("organisasi_id")
-  organisasi     Organisasi?     @relation(fields: [organisasiId], references: [id])
-  createdBy      String          @default("init") @map("created_by")
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedBy      String?         @map("updated_by")
-  updatedAt      DateTime?       @updatedAt @map("updated_at")
-  userRole       UserRole[]
-  userPreference UserPreference? // 1-to-1 relation with UserPreference
+  id                                  String                              @id @default(cuid())
+  name                                String
+  email                               String                              @unique
+  password                            String?
+  emailVerified                       DateTime?                           @map("email_verified")
+  image                               String?
+  status                              StatusUser                          @default(ACTIVE) @map("status_aktif")
+  sessions                            Session[]
+  NIP                                 String?                             @unique @map("nip")
+  organisasiId                        String?                             @map("organisasi_id")
+  organisasi                          Organisasi?                         @relation(fields: [organisasiId], references: [id])
+  createdBy                           String                              @default("init") @map("created_by")
+  createdAt                           DateTime                            @default(now()) @map("created_at")
+  updatedBy                           String?                             @map("updated_by")
+  updatedAt                           DateTime?                           @updatedAt @map("updated_at")
+  userRole                            UserRole[]
+  userPreference                      UserPreference? // 1-to-1 relation with UserPreference
+  anggotaKK                           AnggotaKK[]
+  penugasanJabatan                    PenugasanJabatan[]
+  penerimaIndividuNaskahDinasKeluar   PenerimaIndividuNaskahDinasKeluar[]
+  riwayatParaf                        RiwayatParaf[]
+  tandaTanganElektronik               TandaTanganElektronik[]
+  auditTrail                          AuditTrail[]                        @relation(name: "AuditTrailUser")
+  notifikasi                          Notifikasi[]                        @relation(name: "NotifikasiUser")
+  agenda                              Agenda[]                            @relation(name: "AgendaUser")
+  naskahDinasKeluarYangDitandatangani NaskahDinasKeluar[]                 @relation(name: "PenandatanganNaskahDinasKeluar")
+  naskahDinasKeluarYangDidraft        NaskahDinasKeluar[]                 @relation(name: "PembuatDraftNaskahDinasKeluar")
 
   @@map("users")
 }
@@ -144,26 +154,642 @@ enum StatusUser {
   LOCKED
 }
 
-enum StatusAktif {
+enum StatusOrganisasi {
   AKTIF
   NON_AKTIF
+  DIGABUNGKAN
+  DIPISAHKAN
   DIBUBARKAN
+  TIDAK_DIKETAHUI
 }
 
+enum Status {
+  AKTIF
+  NON_AKTIF
+}
+
+// ===============================================
+// ENUMS - Untuk standarisasi nilai data
+// ===============================================
+
+enum JenisKelamin {
+  LAKI_LAKI
+  PEREMPUAN
+}
+
+enum JenisArahNaskahDinas {
+  MASUK
+  KELUAR
+}
+
+enum StatusNaskahDinasKeluar {
+  DRAFT
+  DITOLAK
+  SIAP_TTE
+  TERTANDA_TANGANI
+  TERKIRIM
+  DIARSIPKAN
+}
+
+enum StatusDraftNaskahDinasKeluar {
+  DRAFT
+  UNTUK_DIREVISI
+  DISETUJUI
+  DITOLAK
+  DIBATALKAN
+}
+
+enum StatusDisposisi {
+  BARU
+  DIBACA
+  DITINDAKLANJUTI
+  SELESAI
+  DIARSIPKAN
+}
+
+enum StatusTindakLanjut {
+  BELUM_DIKERJAKAN
+  SEDANG_DIKERJAKAN
+  SELESAI
+}
+
+enum JenisAksiAudit {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  APPROVE
+  REJECT
+  SIGN
+  DISPOSE
+}
+
+// ===============================================
+// MODEL INTI APLIKASI
+// ===============================================
+
 model Organisasi {
-  id                String       @id @default(cuid())
-  nama              String
-  singkatan         String?
-  status            StatusAktif  @default(AKTIF) // Mengganti aktif dengan enum status
-  tingkat           Int? //@default(-1)
-  indukOrganisasiId String?      @map("induk_organisasi_id")
-  indukOrganisasi   Organisasi?  @relation("pohon_organisasi", fields: [indukOrganisasiId], references: [id])
-  createdBy         String       @map("created_by")
-  createdAt         DateTime     @default(now()) @map("created_at")
-  updatedBy         String?      @map("updated_by")
-  updatedAt         DateTime?    @map("updated_at")
-  subOrganisasi     Organisasi[] @relation("pohon_organisasi")
-  user              User[]
+  id                               String                      @id @default(cuid())
+  nama                             String
+  singkatan                        String?
+  status                           StatusOrganisasi            @default(AKTIF) // Mengganti aktif dengan enum status
+  tingkat                          Int? //@default(-1)
+  indukOrganisasiId                String?                     @map("induk_organisasi_id")
+  indukOrganisasi                  Organisasi?                 @relation("pohon_organisasi", fields: [indukOrganisasiId], references: [id])
+  createdBy                        String                      @map("created_by")
+  createdAt                        DateTime                    @default(now()) @map("created_at")
+  updatedBy                        String?                     @map("updated_by")
+  updatedAt                        DateTime?                   @map("updated_at")
+  subOrganisasi                    Organisasi[]                @relation("pohon_organisasi")
+  user                             User[]
+  jabatan                          Jabatan[]
+  kelompokKerja                    KelompokKerja[]
+  penerimaNaskahDinasKeluar        PenerimaNaskahDinasKeluar[]
+  penerimaNaskahDinasMasuk         PenerimaNaskahDinasMasuk[]  @relation(name: "OrgPenerimaNaskahDinasMasuk")
+  naskahDinasKeluar                NaskahDinasKeluar[]         @relation(name: "OrganisasiPengirimNaskahDinasKeluar")
+  naskahDinasKeluarCurrentWorkflow NaskahDinasKeluar[]         @relation(name: "CurrentWorkflowOrganisasiNaskahDinasKeluar")
 
   @@map("organisasi")
+}
+
+model organisasiEksternal {
+  id               String             @id @default(cuid())
+  nama             String
+  singkatan        String?
+  alamat           String?
+  keterangan       String?
+  kontak           String? // e.g., phone number or email
+  email            String?
+  cp               String? // contact person
+  createdBy        String             @map("created_by")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedBy        String?            @map("updated_by")
+  updatedAt        DateTime?          @updatedAt @map("updated_at")
+  naskahDinasMasuk NaskahDinasMasuk[]
+
+  @@map("organisasi_eksternal")
+}
+
+model PenugasanJabatan {
+  id             String       @id @default(cuid())
+  userId         String       @map("user_id")
+  jabatanId      String       @map("jabatan_id")
+  jenisJabatan   JenisJabatan @default(DEFINITIF)
+  dasarPenugasan String? // e.g., "NaskahDinas Keputusan No. 123/2023", "NaskahDinas Tugas No. 456/2023"
+  status         Status       @default(AKTIF) // Aktif, Non Aktif
+  periodeMulai   DateTime
+  periodeSelesai DateTime?
+  keterangan     String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  jabatan Jabatan @relation(fields: [jabatanId], references: [id])
+}
+
+enum JenisJabatan {
+  DEFINITIF
+  PLH
+  PLT
+}
+
+// Model untuk Kelompok Kerja (KK) dan Anggota KK dalam organisasi
+// Satu KK bisa memiliki banyak anggota, dan satu anggota bisa menjadi bagian dari banyak KK
+// Relasi many-to-many ini diatur melalui model AnggotaKK
+model KelompokKerja {
+  id                String      @id @default(cuid())
+  nama              String
+  singkatan         String?
+  status            Status      @default(AKTIF) // Aktif, Non Aktif
+  indukOrganisasiId String?     @map("induk_organisasi_id")
+  indukOrganisasi   Organisasi? @relation(fields: [indukOrganisasiId], references: [id])
+  deskripsi         String?
+  createdBy         String      @map("created_by")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedBy         String?     @map("updated_by")
+  updatedAt         DateTime?   @updatedAt @map("updated_at")
+  anggota           AnggotaKK[]
+
+  @@map("kelompok_kerja")
+}
+
+model AnggotaKK {
+  id              String    @id @default(cuid())
+  userId          String    @map("user_id")
+  kelompokKerjaId String    @map("kelompok_kerja_id")
+  peran           String? // e.g., "Ketua", "Anggota", "Sekretaris"
+  status          Status    @default(AKTIF) // Aktif, Non Aktif
+  isLeader        Boolean   @default(false) @map("is_leader") // Menandai apakah anggota ini adalah ketua KK
+  joinedAt        DateTime  @default(now()) @map("joined_at")
+  leftAt          DateTime? @map("left_at")
+  createdBy       String    @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedBy       String?   @map("updated_by")
+  updatedAt       DateTime? @updatedAt @map("updated_at")
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kelompokKerja KelompokKerja @relation(fields: [kelompokKerjaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kelompokKerjaId])
+  @@map("anggota_kk")
+}
+
+model Jabatan {
+  id           String   @id @default(cuid())
+  namaJabatan  String   @map("nama_jabatan") // Staf, Kepala Sub Bagian, Kepala Bagian, Kepala Bidang, Direktur, Direktur Jenderal, Sekretaris Jenderal, Menteri, Sekretaris Inspektorat Jenderal, ( ada beberapa kepala ) 
+  keterangan   String? // e.g., "Kepala Sub Bagian", "Kepala Bagian", "Kepala Biro", "Direktur", "Direktur Jenderal", "Sekretaris Jenderal", "Menteri", "Sekretaris Inspektorat Jenderal"
+  singkatan    String? // e.g., "Kepala" -> "Ka", "Direktur Jenderal" -> "Dirjen", "Sekretaris Jenderal" -> "Sekjen", "Menteri" -> "Menteri" , "Sekretaris Inspektorat Jenderal" -> "Sesitjen"
+  status       Status   @default(AKTIF) // Aktif, Non Aktif 
+  level        Int
+  deskripsi    String?
+  organisasiId String   @map("unit_organisasi_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relasi
+  organisasi       Organisasi         @relation(fields: [organisasiId], references: [id])
+  penugasanJabatan PenugasanJabatan[]
+
+  @@map("jabatan")
+}
+
+// ==============================================
+// MANAJEMEN SURAT
+// ==============================================
+
+model JenisNaskahDinas {
+  id                        String    @id @default(cuid())
+  namaJenis                 String    @unique @map("nama_jenis")
+  keterangan                String? // e.g., "NaskahDinas Keputusan", "NaskahDinas Edaran", "Nota Dinas", "NaskahDinas Perintah", "NaskahDinas Undangan"
+  singkatan                 String? // e.g., "NaskahDinas Keputusan" -> "SK", "NaskahDinas Edaran" -> "SE", "Nota Dinas" -> "Nodinas", "NaskahDinas Perintah" -> "SP", "NaskahDinas Undangan" -> "SU"
+  kewenanganPenandatanganan String?   @map("kewenangan_penandatanganan") // e.g., "Menteri", "Sekretaris Jenderal", "Direktur Jenderal", "Kepala"
+  level                     Int? // Untuk mengatur level kewenangan, misalnya 1 untuk Menteri, 2 untuk Sekretaris Jenderal, dst.
+  deskripsi                 String?
+  createdBy                 String    @map("created_by")
+  createdAt                 DateTime  @default(now()) @map("created_at")
+  updatedBy                 String?   @map("updated_by")
+  updatedAt                 DateTime? @updatedAt @map("updated_at")
+
+  naskahDinasMasuk  NaskahDinasMasuk[]
+  naskahDinasKeluar NaskahDinasKeluar[]
+
+  @@map("jenis_naskah_dinas")
+}
+
+model KlasifikasiNaskahDinas {
+  id              String    @id @default(cuid())
+  kodeKlasifikasi String    @unique @map("kode_klasifikasi")
+  namaKlasifikasi String    @map("nama_klasifikasi")
+  deskripsi       String?
+  createdBy       String    @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedBy       String?   @map("updated_by")
+  updatedAt       DateTime? @updatedAt @map("updated_at")
+
+  naskahDinasMasuk  NaskahDinasMasuk[]  @relation(name: "KlasifikasiNaskahDinasMasuk")
+  naskahDinasKeluar NaskahDinasKeluar[]
+
+  @@map("klasifikasi_naskah_dinas")
+}
+
+model DerajatKecepatanNaskahDinas {
+  id          String    @id @default(cuid())
+  namaDerajat String    @unique @map("nama_derajat")
+  deskripsi   String?
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedBy   String?   @map("updated_by")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+
+  naskahDinasKeluar NaskahDinasKeluar[]
+  naskahDinasMasuk  NaskahDinasMasuk[]  @relation(name: "DerajatKecepatanNaskahDinasMasuk")
+
+  @@map("derajat_kecepatan_naskah_dinas")
+}
+
+model TingkatKeamananNaskahDinas {
+  id          String    @id @default(cuid())
+  namaTingkat String    @unique @map("nama_tingkat")
+  deskripsi   String?
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedBy   String?   @map("updated_by")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+
+  naskahDinasMasuk  NaskahDinasMasuk[]  @relation(name: "TingkatKeamananNaskahDinasMasuk")
+  naskahDinasKeluar NaskahDinasKeluar[]
+
+  @@map("tingkat_keamanan_naskah_dinas")
+}
+
+enum JenisSumberNaskahDinas {
+  KEMENTERIAN_LEMBAGA
+  ORGANISASI_INTERNASIONAL
+  LSM
+  PERUSAHAAN
+  PERORANGAN
+  EMAIL
+  LAINNYA
+}
+
+model NaskahDinasMasuk {
+  id                 String                  @id @default(cuid())
+  nomorNaskahDinas   String?
+  sumberId           String? // e.g., "Kementerian/Lembaga", "Organisasi Internasional", "LSM", "Perusahaan", "Perorangan", "Email", "Lainnya"
+  sumber             JenisSumberNaskahDinas?
+  tanggalTerima      DateTime
+  pengirimId         String? // Relasi ke organisasiEksternal jika pengirim dari luar
+  pengirimEksternal  organisasiEksternal?    @relation(fields: [pengirimId], references: [id])
+  keteranganPengirim String?
+  alamatPengirim     String? // alamat fisik, email, atau detail lain
+  perihal            String
+  ringkasanIsi       String?
+  klasifikasiId      String?
+  tingkatKeamananId  String?
+  derajatKecepatanId String?
+  status             StatusDisposisi
+  lampiran           String?
+  fileUrl            String?
+  createdBy          String
+  createdAt          DateTime                @default(now())
+  updatedBy          String?
+  updatedAt          DateTime?               @updatedAt
+
+  klasifikasi        KlasifikasiNaskahDinas?      @relation(name: "KlasifikasiNaskahDinasMasuk", fields: [klasifikasiId], references: [id])
+  tingkatKeamanan    TingkatKeamananNaskahDinas?  @relation(name: "TingkatKeamananNaskahDinasMasuk", fields: [tingkatKeamananId], references: [id])
+  derajatKecepatan   DerajatKecepatanNaskahDinas? @relation(name: "DerajatKecepatanNaskahDinasMasuk", fields: [derajatKecepatanId], references: [id])
+  jenisNaskahDinas   JenisNaskahDinas?            @relation(fields: [jenisNaskahDinasId], references: [id])
+  jenisNaskahDinasId String?
+
+  penerimaNaskahDinasMasuk PenerimaNaskahDinasMasuk[] @relation(name: "PenerimaNaskahDinasMasuk")
+
+  dokumenNaskahDinasMasuk DokumenNaskahDinasMasuk[] @relation(name: "DokumenNaskahDinasMasuk")
+}
+
+model DokumenNaskahDinasMasuk {
+  id            String    @id @default(cuid())
+  naskahDinasId String    @map("naskahDinas_id")
+  isLampiran    Boolean   @default(false)
+  versi         Int       @default(1)
+  fileUrl       String
+  catatan       String?
+  createdBy     String
+  createdAt     DateTime  @default(now())
+  updatedBy     String?
+  updatedAt     DateTime? @updatedAt
+
+  naskahDinas NaskahDinasMasuk @relation(name: "DokumenNaskahDinasMasuk", fields: [naskahDinasId], references: [id], onDelete: Cascade)
+
+  @@map("dokumen_naskah_dinas_masuk")
+}
+
+enum JenisTandaTangan {
+  TTE_BY_SYSTEM
+  TTE_BY_3RD_PARTY
+  MANUAL
+}
+
+// sebuah naskah dinas keluar jika dibuat oleh user dengan level organisasi tertentu , (misalkan level 4), kemudian organisasiPengirimId adalah organisasi level 1, ( makan akan akan melewati riwayat paraf dari pejabat level, 4,3,2,1 )
+// use case contoh :
+// cari draft nashkah dinas oleh user x
+// cari yg currentWorkflowStep = 0 dan currentWorkflowOrgId = organisasi user x
+// cari draft yang perlu di paraf oleh user y ( sebagai pimpinan organisasi user y )
+// cari yg currentWorkflowOrgId = organisasi user y
+// nah tantangannya adalah ketika sudah lewat currentWorkflowOrgId y misalkan sudah ke organisasi z, kemudian user y ingin mencari draft yang sudah di parafnya, maka tidak bisa lagi menggunakan currentWorkflowOrgId = organisasi user y, karena sudah berganti ke organisasi z
+// solusinya adalah ketika user y sudah memparaf, maka simpan juga di tabel riwayat paraf, sehingga ketika user y ingin mencari draft yang sudah di parafnya, maka cari di tabel riwayat paraf
+model NaskahDinasKeluar {
+  id                   String                  @id @default(cuid())
+  nomorDraft           String?                 @unique
+  pembuatDraftId       String?
+  nomorNaskahDinas     String?                 @unique
+  tanggalKirim         DateTime
+  organisasiPengirimId String                  @map("organisasi_pengirim_id")
+  penandatanganId      String?                 @map("penandatangan_id") // user id dari penandatangan
+  jenisTandaTangan     JenisTandaTangan?       @map("jenis_tanda_tangan")
+  perihal              String
+  jenisId              String
+  klasifikasiId        String
+  tingkatKeamananId    String
+  derajatKecepatanId   String
+  status               StatusNaskahDinasKeluar
+  workflowOrganisasi   Json?                   @map("workflow_organisasi") // array of organization IDs representing the workflow path
+  currentWorkflowStep  Int?                    @map("current_workflow_step") // current step in the workflow
+  currentWorkflowOrgId String?                 @map("current_workflow_org_id") // current organization responsible for the next action
+  lampiran             String?
+  fileUrl              String?
+  createdBy            String
+  createdAt            DateTime                @default(now())
+  updatedBy            String?
+  updatedAt            DateTime?               @updatedAt
+
+  pembuatDraft                      User?                               @relation(name: "PembuatDraftNaskahDinasKeluar", fields: [pembuatDraftId], references: [id])
+  organisasiPengirim                Organisasi                          @relation(name: "OrganisasiPengirimNaskahDinasKeluar", fields: [organisasiPengirimId], references: [id])
+  penandatangan                     User?                               @relation(name: "PenandatanganNaskahDinasKeluar", fields: [penandatanganId], references: [id])
+  currentWorkflowOrganisasi         Organisasi?                         @relation(name: "CurrentWorkflowOrganisasiNaskahDinasKeluar", fields: [currentWorkflowOrgId], references: [id])
+  jenis                             JenisNaskahDinas                    @relation(fields: [jenisId], references: [id])
+  klasifikasi                       KlasifikasiNaskahDinas              @relation(fields: [klasifikasiId], references: [id])
+  tingkatKeamanan                   TingkatKeamananNaskahDinas          @relation(fields: [tingkatKeamananId], references: [id])
+  derajatKecepatan                  DerajatKecepatanNaskahDinas         @relation(fields: [derajatKecepatanId], references: [id])
+  riwayatParaf                      RiwayatParaf[]
+  tandaTangan                       TandaTanganElektronik[]
+  penerimaNaskahDinasKeluar         PenerimaNaskahDinasKeluar[]
+  penerimaIndividuNaskahDinasKeluar PenerimaIndividuNaskahDinasKeluar[]
+  lampiranNaskahDinasKeluar         LampiranNaskahDinasKeluar[]
+  dokumenDraftNaskahDinasKeluar     DokumenDraftNaskahDinasKeluar[]     @relation(name: "DokumenDraftNaskahDinasKeluar")
+  dokumenFinalNaskahDinasKeluar     DokumenFinalNaskahDinasKeluar[]     @relation(name: "DokumenFinalNaskahDinasKeluar")
+
+  @@map("naskah_dinas_keluar")
+}
+
+model DokumenDraftNaskahDinasKeluar {
+  id                  String    @id @default(cuid())
+  naskahDinasKeluarId String    @map("naskahDinas_id")
+  versi               Int       @default(1)
+  fileUrl             String?
+  catatan             String?
+  createdBy           String
+  createdAt           DateTime  @default(now())
+  updatedBy           String?
+  updatedAt           DateTime? @updatedAt
+
+  naskahDinasKeluar NaskahDinasKeluar @relation(name: "DokumenDraftNaskahDinasKeluar", fields: [naskahDinasKeluarId], references: [id], onDelete: Cascade)
+
+  @@map("dokumen_draft_naskah_dinas_keluar")
+}
+
+model DokumenFinalNaskahDinasKeluar {
+  id                  String    @id @default(cuid())
+  naskahDinasKeluarId String    @map("naskahDinas_id")
+  isLampiran          Boolean   @default(false)
+  fileUrl             String?
+  createdBy           String
+  createdAt           DateTime  @default(now())
+  updatedBy           String?
+  updatedAt           DateTime? @updatedAt
+
+  naskahDinasKeluar NaskahDinasKeluar @relation(name: "DokumenFinalNaskahDinasKeluar", fields: [naskahDinasKeluarId], references: [id], onDelete: Cascade)
+
+  @@map("dokumen_final_naskah_dinas_keluar")
+}
+
+// --- Manajemen Disposisi ---
+// disposisi merupakan naskah dinas keluar.
+// pencatatan disini hanya untuk naskah dinas keluar yang BERJENIS disposisi
+// naskah dinas keluar yang bukan disposisi, tidak perlu dicatat disini
+model KeteranganDisposisi {
+  id                     String   @id @default(cuid())
+  penerimaNaskahKeluarId String?  @map("penerima_naskah_keluar_id")
+  penerimaNaskahMasukId  String?  @map("penerima_naskah_masuk_id")
+  isiDisposisi           String   @map("isi_disposisi")
+  daftarInstruksi        Json? // array of string instruksi disposisi // akan mereferensi ke JenisInstruksiDisposisi di aplikasi
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  penerimaNaskahKeluar PenerimaNaskahDinasKeluar? @relation(fields: [penerimaNaskahKeluarId], references: [id])
+  penerimaNaskahMasuk  PenerimaNaskahDinasMasuk?  @relation(fields: [penerimaNaskahMasukId], references: [id])
+
+  @@map("disposisi")
+}
+
+model JenisInstruksiDisposisi {
+  id         String    @id @default(cuid())
+  namaJenis  String    @unique @map("nama_jenis")
+  keterangan String?
+  urutan     Int       @default(0)
+  status     Status    @default(AKTIF)
+  createdBy  String    @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedBy  String?   @map("updated_by")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
+
+  @@map("jenis_instruksi_disposisi")
+}
+
+enum StatusPenerimaan {
+  BARU
+  DITERIMA
+  DITOLAK
+  DIBACA
+  DIKOMENTARI
+  DITINDAKLANJUTI
+  SELESAI
+  DIARSIPKAN
+}
+
+model PenerimaNaskahDinasKeluar {
+  id            String           @id @default(cuid())
+  naskahDinasId String           @map("naskahDinas_id")
+  organisasiId  String           @map("organisasi_id")
+  statusTerima  StatusPenerimaan @default(BARU) @map("status_terima")
+  tanggalStatus DateTime?        @map("tanggal_status")
+  createdAt     DateTime         @default(now()) @map("created_at")
+
+  naskahDinas                    NaskahDinasKeluar                @relation(fields: [naskahDinasId], references: [id], onDelete: Cascade)
+  organisasi                     Organisasi                       @relation(fields: [organisasiId], references: [id])
+  logPenerimaanNaskahDinasKeluar LogPenerimaanNaskahDinasKeluar[]
+  keteranganDisposisi            KeteranganDisposisi[]
+
+  @@unique([naskahDinasId, organisasiId])
+  @@map("penerima_naskah_dinas")
+}
+
+enum JenisKeteranganPenerima {
+  KEPADA
+  TEMBUSAN
+  INFO
+  UNTUK_PERHATIAN
+}
+
+// jika menggunakan satu pintu untuk naskah dinas masuk dan keluar, gunakan relasi terpisah
+model PenerimaNaskahDinasMasuk {
+  id                String                  @id @default(cuid())
+  naskahDinasId     String                  @map("naskahDinas_id")
+  organisasiId      String                  @map("organisasi_id")
+  jenisPenerima     JenisKeteranganPenerima @map("jenis_penerima")
+  statusTerima      StatusPenerimaan        @default(BARU) @map("status_terima")
+  tanggalStatus     DateTime?               @map("tanggal_status")
+  catatanPenerimaan String?                 @map("catatan_penerimaan")
+  createdAt         DateTime                @default(now()) @map("created_at")
+
+  naskahDinas         NaskahDinasMasuk      @relation(name: "PenerimaNaskahDinasMasuk", fields: [naskahDinasId], references: [id], onDelete: Cascade)
+  organisasi          Organisasi            @relation(name: "OrgPenerimaNaskahDinasMasuk", fields: [organisasiId], references: [id])
+  keteranganDisposisi KeteranganDisposisi[]
+
+  @@unique([naskahDinasId, organisasiId])
+  @@map("penerima_naskah_dinas_masuk")
+}
+
+model LogPenerimaanNaskahDinasKeluar {
+  id                String                    @id @default(cuid())
+  penerimaId        String                    @map("penerima_id")
+  penerima          PenerimaNaskahDinasKeluar @relation(fields: [penerimaId], references: [id], onDelete: Cascade)
+  statusTerima      StatusPenerimaan          @map("status_terima")
+  tanggalStatus     DateTime?                 @map("tanggal_status")
+  catatanPenerimaan String?                   @map("catatan_penerimaan")
+  createdAt         DateTime                  @default(now()) @map("created_at")
+
+  @@map("log_penerimaan_naskah_dinas")
+}
+
+model PenerimaIndividuNaskahDinasKeluar {
+  id            String                  @id @default(cuid())
+  naskahDinasId String                  @map("naskahDinas_id")
+  userId        String                  @map("user_id")
+  jenisPenerima JenisKeteranganPenerima @map("jenis_penerima")
+  statusTerima  StatusPenerimaan        @default(BARU) @map("status_terima")
+  tanggalStatus DateTime?               @map("tanggal_status")
+  createdAt     DateTime                @default(now()) @map("created_at")
+
+  naskahDinas                            NaskahDinasKeluar                        @relation(fields: [naskahDinasId], references: [id], onDelete: Cascade)
+  user                                   User                                     @relation(fields: [userId], references: [id])
+  logPenerimaanIndividuNaskahDinasKeluar LogPenerimaanIndividuNaskahDinasKeluar[]
+
+  @@unique([naskahDinasId, userId])
+  @@map("penerima_individu_naskah_dinas")
+}
+
+model LogPenerimaanIndividuNaskahDinasKeluar {
+  id                String                            @id @default(cuid())
+  penerimaId        String                            @map("penerima_id")
+  penerima          PenerimaIndividuNaskahDinasKeluar @relation(fields: [penerimaId], references: [id], onDelete: Cascade)
+  statusTerima      StatusPenerimaan                  @map("status_terima")
+  tanggalStatus     DateTime?                         @map("tanggal_status")
+  catatanPenerimaan String?                           @map("catatan_penerimaan")
+  createdAt         DateTime                          @default(now()) @map("created_at")
+
+  @@map("log_penerimaan_individu_naskah_dinas")
+}
+
+model LampiranNaskahDinasKeluar {
+  id            String   @id @default(cuid())
+  namaFile      String   @map("nama_file")
+  urlFile       String   @map("url_file")
+  tipeFile      String   @map("tipe_file")
+  ukuranFile    Int      @map("ukuran_file")
+  naskahDinasId String   @map("naskahDinas_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  naskahDinas NaskahDinasKeluar @relation(fields: [naskahDinasId], references: [id], onDelete: Cascade)
+
+  @@map("lampiran_naskah_dinas")
+}
+
+// --- Manajemen Persetujuan (Paraf) & TTE ---
+
+model RiwayatParaf {
+  id            String                  @id @default(cuid())
+  naskahDinasId String                  @map("naskahDinas_id")
+  userId        String                  @map("user_id")
+  urutanParaf   Int                     @map("urutan_paraf")
+  status        StatusNaskahDinasKeluar
+  catatan       String?
+  tanggalParaf  DateTime?               @map("tanggal_paraf")
+  createdAt     DateTime                @default(now()) @map("created_at")
+
+  naskahDinas NaskahDinasKeluar @relation(fields: [naskahDinasId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id])
+
+  @@map("riwayat_paraf")
+}
+
+model TandaTanganElektronik {
+  id                    String                  @id @default(cuid())
+  naskahDinasId         String                  @map("naskahDinas_id")
+  userId                String                  @map("user_id")
+  requestIdBsre         String?                 @map("request_id_bsre")
+  status                StatusNaskahDinasKeluar
+  fileUrlSigned         String?                 @map("file_url_signed")
+  tanggalDitandatangani DateTime?               @map("tanggal_ditandatangani")
+  createdAt             DateTime                @default(now()) @map("created_at")
+
+  naskahDinas NaskahDinasKeluar @relation(fields: [naskahDinasId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id])
+
+  @@map("tanda_tangan_elektronik")
+}
+
+// --- Model Pendukung ---
+
+model AuditTrail {
+  id        String         @id @default(cuid())
+  userId    String         @map("user_id")
+  aksi      JenisAksiAudit
+  deskripsi String
+  ipAddress String?        @map("ip_address")
+  userAgent String?        @map("user_agent")
+  timestamp DateTime       @default(now())
+
+  user User @relation(name: "AuditTrailUser", fields: [userId], references: [id])
+
+  @@map("audit_trail")
+}
+
+model Notifikasi {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  judul       String
+  pesan       String
+  urlTujuan   String?  @map("url_tujuan")
+  sudahDibaca Boolean  @default(false) @map("sudah_dibaca")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(name: "NotifikasiUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifikasi")
+}
+
+model Agenda {
+  id             String    @id @default(cuid())
+  userId         String    @map("user_id")
+  judulAgenda    String    @map("judul_agenda")
+  deskripsi      String?
+  tanggalMulai   DateTime  @map("tanggal_mulai")
+  tanggalSelesai DateTime? @map("tanggal_selesai")
+  sumberAgenda   String    @map("sumber_agenda")
+  refId          String?   @map("ref_id")
+
+  user User @relation(name: "AgendaUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("agenda")
 }
