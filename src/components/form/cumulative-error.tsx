@@ -23,8 +23,8 @@ const CumulativeErrors = <T extends FieldValues>({
     error:
       | string
       | FieldError
-      | Merge<FieldError, FieldErrorsImpl<any>>
-      | Record<string, any>
+      | Merge<FieldError, FieldErrorsImpl<FieldValues>>
+      | Record<string, FieldError | string>
       | undefined
   ): string => {
     // Handle if the error is a direct string
@@ -41,8 +41,8 @@ const CumulativeErrors = <T extends FieldValues>({
     if (typeof error === "object" && error !== null && !("message" in error)) {
       const firstKey = Object.keys(error)[0];
 
-      if (firstKey && (error as Record<string, any>).hasOwnProperty(firstKey)) {
-        const potentialError = (error as Record<string, any>)[firstKey];
+      if (firstKey && Object.prototype.hasOwnProperty.call(error, firstKey)) {
+        const potentialError = (error as Record<string, unknown>)[firstKey];
 
         // Ensure potentialError is an object with a 'message' property
         if (
@@ -65,7 +65,7 @@ const CumulativeErrors = <T extends FieldValues>({
       <ul className="list-disc list-inside">
         {Object.entries(errors).map(([key, value]) => (
           <li key={key}>
-            {verbose && <span>${key}</span>} {getMessage(value)}
+            {verbose && <span>${key}: </span>} {getMessage(value as FieldError)}
           </li>
         ))}
       </ul>

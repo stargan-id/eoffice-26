@@ -12,20 +12,16 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-import { cn } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronRight } from "lucide-react";
-import {
-  SideBarMenuButtonCustom,
-  SideBarMenuButtonWithBadge,
-} from "./SidebarCustom";
+import { cn } from "@/lib/utils";
 import { getRoutes, RouteItem } from "@/route-with-sub";
+import { ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
-import { stat } from "fs";
+import { SideBarMenuButtonWithBadge } from "./SidebarCustom";
 
 // SidebarHeader component
 export function SidebarHeader() {

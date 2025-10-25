@@ -36,7 +36,7 @@ export function TopBar({ title, subtitle, children }: TopBarProps) {
   const { toggleOpen } = useSidebarStore();
 
   return (
-    <header className="bg-white border-b border-gray-200 pl-2 px-4 py-3 flex items-center justify-between">
+    <header className="bg-white border-b border-gray-200 pl-2 px-4 h-12 flex items-center justify-between">
       {/* Left Section */}
       <div className="flex items-center gap-4">
         {/* Mobile Menu Button */}

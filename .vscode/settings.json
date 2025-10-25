@@ -1,7 +1,9 @@
 {
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "always"
+        "source.fixAll.eslint": "always",
+        "source.organizeImports": "explicit",
+        "source.removeUnusedImports": "explicit"
     },
     "eslint.validate": [
         "javascript",

@@ -4,7 +4,7 @@ interface InputProps {
   id: string;
   label: string;
   type?: string;
-  register: UseFormRegister<any>;
+  register: UseFormRegister<Record<string, unknown>>;
   error?: FieldError | undefined;
   pattern?: string;
 }

@@ -30,10 +30,12 @@ export default function RootLayout({
       >
         <SidebarProvider
           defaultOpen={false}
-          style={{
-            "--sidebar-width": "15rem",
-            "--sidebar-width-mobile": "15rem",
-          }}
+          style={
+            {
+              "--sidebar-width": "15rem",
+              "--sidebar-width-mobile": "15rem",
+            } as React.CSSProperties
+          }
         >
           {children}
         </SidebarProvider>

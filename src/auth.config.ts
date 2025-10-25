@@ -1,7 +1,7 @@
+import { getUser, getUserRoles } from "@/lib/services/user";
 import bcrypt from "bcryptjs"; // Import bcrypt for password hashing and comparison
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { getUser, getUserRoles } from "@/lib/services/user";
 import { LoginSchema } from "./zod/schema/login";
 
 export default {
@@ -21,8 +21,7 @@ export default {
       },
       async authorize(credentials) {
         //validate against the schema
-        const validatedCredentials =
-          LoginSchema.safeParse(credentials);
+        const validatedCredentials = LoginSchema.safeParse(credentials);
 
         if (validatedCredentials.success) {
           const { email, password } = validatedCredentials.data;
@@ -85,13 +84,13 @@ export default {
       //console.log("[session] user", user);
       session.user.id = token.sub as string;
       session.user.name = token.name;
-      session.user.nip = token.nip as string;
-      session.user.unitKerjaId = token.unitKerjaId as string;
-      session.user.unitKerjaNama = token.unitKerjaNama as string;
-      session.user.unitKerjaNamaSingkat = token.unitKerjaNamaSingkat as string;
-      session.user.satkerId = token.satkerId as string;
-      session.user.satkerNama = token.satkerNama as string;
-      session.user.satkerNamaSingkat = token.satkerNamaSingkat as string;
+      // session.user.nip = token.nip as string;
+      // session.user.unitKerjaId = token.unitKerjaId as string;
+      // session.user.unitKerjaNama = token.unitKerjaNama as string;
+      // session.user.unitKerjaNamaSingkat = token.unitKerjaNamaSingkat as string;
+      // session.user.satkerId = token.satkerId as string;
+      // session.user.satkerNama = token.satkerNama as string;
+      // session.user.satkerNamaSingkat = token.satkerNamaSingkat as string;
       session.user.roles = token.roles as string[];
       session.user.permissions = token.permissions as string[];
       return session;
@@ -103,13 +102,13 @@ export default {
         console.log("[jwt] user", user);
         token.id = user.id;
         token.name = user.name;
-        token.nip = user.nip;
-        token.unitKerjaId = user.unitKerjaId;
-        token.unitKerjaNama = user.unitKerjaNama;
-        token.unitKerjaNamaSingkat = user.unitKerjaNamaSingkat;
-        token.satkerId = user.satkerId;
-        token.satkerNama = user.satkerNama;
-        token.satkerNamaSingkat = user.satkerNamaSingkat;
+        // token.nip = user.nip;
+        // token.unitKerjaId = user.unitKerjaId;
+        // token.unitKerjaNama = user.unitKerjaNama;
+        // token.unitKerjaNamaSingkat = user.unitKerjaNamaSingkat;
+        // token.satkerId = user.satkerId;
+        // token.satkerNama = user.satkerNama;
+        // token.satkerNamaSingkat = user.satkerNamaSingkat;
         token.roles = user.roles as string[];
         token.permissions = user.permissions;
       }
