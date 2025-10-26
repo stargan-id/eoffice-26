@@ -1,6 +1,7 @@
 "use client";
 import { getInboxData } from "@/actions/inbox";
 import { TableActionBar } from "@/components/table/TableActionBar";
+import { cn } from "@/lib/utils";
 import { InboxItem } from "@/types/inbox-item.types";
 import {
     ColumnDef,
@@ -66,7 +67,7 @@ const columns: ColumnDef<InboxItem>[] = [
     { accessorKey: "sender", header: "Pengirim" },
     { accessorKey: "subject", header: "Subjek" },
     { accessorKey: "receivedAt", header: "Tanggal", cell: info => new Date(info.getValue() as string).toLocaleDateString() },
-    { accessorKey: "status", header: "Status" },
+    // { accessorKey: "status", header: "Status" },
 ];
 
 type TableSuratMasukProps = {
@@ -74,7 +75,7 @@ type TableSuratMasukProps = {
     onChangePage?: (table: Table<InboxItem>, page: number) => void;
 };
 
-export const TableSuratMasuk = ({ data, onChangePage }: TableSuratMasukProps) => {
+export const TableSuratMasuk = ({ data }: TableSuratMasukProps) => {
     const table = useReactTable({
         data,
         columns,
@@ -82,29 +83,47 @@ export const TableSuratMasuk = ({ data, onChangePage }: TableSuratMasukProps) =>
     });
 
     return (
-        <table className="min-w-full">
-            <thead>
-                {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                        {headerGroup.headers.map(header => (
-                            <th key={header.id} className="px-4 py-2 text-left text-sm font-semibold text-gray-600 bg-gray-50">
-                                {flexRender(header.column.columnDef.header, header.getContext())}
-                            </th>
+        <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto pr-4">
+                <table className="min-w-full">
+                    <thead>
+                        {table.getHeaderGroups().map(headerGroup => (
+                            <tr key={headerGroup.id}>
+                                {headerGroup.headers.map(header => (
+                                    <th key={header.id} className="px-4 py-2 text-left text-sm font-semibold text-gray-600 bg-gray-50 dark:text-gray-300 dark:bg-gray-800">
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
+                                    </th>
+                                ))}
+                            </tr>
                         ))}
-                    </tr>
-                ))}
-            </thead>
-            <tbody>
-                {table.getRowModel().rows.map(row => (
-                    <tr key={row.id} className="hover:bg-gray-100 transition cursor-pointer">
-                        {row.getVisibleCells().map(cell => (
-                            <td key={cell.id} className="px-4 py-3 text-sm text-gray-800">
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>
+                    </thead>
+                    <tbody>
+                        {table.getRowModel().rows.map(row => (
+                            <tr key={row.id} className={cn("hover:bg-gray-100 transition cursor-pointer dark:hover:bg-gray-700",
+                                row.original.status === "unread" ? "font-bold" : ""
+                            )}>
+                                {row.getVisibleCells().map(cell => (
+                                    <td key={cell.id} className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
+                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </td>
+                                ))}
+                            </tr>
                         ))}
-                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="block md:hidden">
+                {data.map(item => (
+                    <div key={item.id} className="border-b border-gray-200 p-4 hover:bg-gray-50 transition cursor-pointer dark:border-gray-700 dark:hover:bg-gray-800">
+                        <div className="font-semibold text-gray-800 dark:text-gray-200">{item.sender}</div>
+                        <div className="text-sm text-gray-600 mt-1 line-clamp-2 text-justify dark:text-gray-400">{item.subject}</div>
+                        <div className="text-xs text-gray-500 mt-1 dark:text-gray-500">{new Date(item.receivedAt).toLocaleDateString()}</div>
+                    </div>
                 ))}
-            </tbody>
-        </table>
+            </div>
+        </>
     );
 };

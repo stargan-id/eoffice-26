@@ -9,5 +9,4 @@ export const mockInboxData: InboxItem[] = Array.from({ length: 30 }, () => ({
     body: faker.lorem.paragraph(),
     receivedAt: faker.date.recent(),
     status: faker.helpers.arrayElement(['read', 'unread']),
-    isRead: faker.datatype.boolean(),
 }));

@@ -3,5 +3,5 @@ export type InboxItem = {
     subject: string;
     sender: string;
     receivedAt: Date;
-    isRead: boolean;
+    status: string;
 };
