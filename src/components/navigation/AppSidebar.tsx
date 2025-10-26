@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { getRoutes, RouteItem } from "@/route-with-sub";
 import { ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import { TooltipProvider } from "../ui/tooltip";
 import { SideBarMenuButtonWithBadge } from "./SidebarCustom";
 
 // SidebarHeader component
@@ -61,37 +62,32 @@ export function AppSidebar({ className }: AppSidebarProps) {
   }, []);
 
   if (routes.length === 0) {
-    return null; // or a loading spinner
+    return (
+      <Sidebar className={cn("gap-0", className)} collapsible="icon">
+        <SidebarHeader />
+      </Sidebar>
+    )
   }
 
   return (
     <Sidebar className={cn("gap-0", className)} collapsible="icon">
       <SidebarHeader />
       <SidebarContent className="gap-0 pb-[5rem]">
-        <SidebarGroup className="py-0">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {routes.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SideBarMenuButtonWithBadge item={item} />
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          {routes.map((item) => {
-            if (item.subs && item.subs.length > 0) {
-              return MenuWithSub(item);
-            } else {
-              return (
-                <SidebarMenuItem key={item.title}>
-                  <SideBarMenuButtonWithBadge item={item} />
-                </SidebarMenuItem>
-              );
-            }
-          })}
-        </SidebarGroup>
+        <TooltipProvider>
+          <SidebarGroup>
+            {routes.map((item) => {
+              if (item.subs && item.subs.length > 0) {
+                return MenuWithSub(item);
+              } else {
+                return (
+                  <SidebarMenuItem key={item.title} className="">
+                    <SideBarMenuButtonWithBadge item={item} />
+                  </SidebarMenuItem>
+                );
+              }
+            })}
+          </SidebarGroup>
+        </TooltipProvider>
       </SidebarContent>
     </Sidebar>
   );
@@ -104,7 +100,7 @@ export const MenuWithSub = (item: RouteItem) => {
       className="group/collapsible w-full"
       key={item.title}
     >
-      <SidebarGroup className="p-0 m-0 w-full">
+      <SidebarGroup className="p-0 m-0 w-full mt-2">
         <SidebarGroupLabel asChild className="text-sm">
           <CollapsibleTrigger>
             {item.title}
@@ -112,10 +108,10 @@ export const MenuWithSub = (item: RouteItem) => {
           </CollapsibleTrigger>
         </SidebarGroupLabel>
         <CollapsibleContent>
-          <SidebarGroupContent className="pl-2">
-            <SidebarMenu>
+          <SidebarGroupContent className="">
+            <SidebarMenu className="p-0">
               {item.subs?.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.title} className="">
                   <SideBarMenuButtonWithBadge item={item} />
                 </SidebarMenuItem>
               ))}

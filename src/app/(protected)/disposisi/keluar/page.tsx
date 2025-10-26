@@ -1,0 +1,11 @@
+import ContainerTable from "@/components/common/ContainerTable";
+import { ProtectedLayout } from "@/components/layout";
+
+export default async function DisposisiKeluarPage() {
+  const activeAlertCount = 5; // Example static count, replace with real data fetching if needed
+  return (
+    <ProtectedLayout title="Disposisi Keluar">
+      <ContainerTable />
+    </ProtectedLayout>
+  );
+}

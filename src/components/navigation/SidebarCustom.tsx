@@ -1,4 +1,4 @@
-import { SidebarMenuBadge, SidebarMenuButton } from "@/components/ui/sidebar";
+import { SidebarMenuBadge, SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
 import { RouteItem } from "@/route-with-sub";
 import Link from "next/link";
 import { createElement, useEffect, useState } from "react";
@@ -21,6 +21,7 @@ import {
   Grid,
   Home,
   Hourglass,
+  Inbox,
   Info,
   Key,
   List,
@@ -28,14 +29,17 @@ import {
   ListTree,
   LucideIcon,
   MapPinned,
+  MessageCircleWarning,
   Milestone,
   MonitorPause,
   MonitorPlay,
+  Send,
   Settings,
   Settings2,
   ShieldCheck,
   Signature,
   SquareActivity,
+  SquareArrowDownRight,
   Table,
   User,
   UserCog,
@@ -44,6 +48,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const iconMap: { [key: string]: LucideIcon } = {
   home: Home,
@@ -81,6 +86,10 @@ const iconMap: { [key: string]: LucideIcon } = {
   "list-tree": ListTree,
   "users-round": UsersRound,
   "shield-check": ShieldCheck,
+  "message-circle": MessageCircleWarning,
+  "inbox": Inbox,
+  "send": Send,
+  "square-arrow-down-right": SquareArrowDownRight
 };
 
 interface SideBarMenuButtonCustomProps {
@@ -113,22 +122,32 @@ export const SideBarMenuButtonWithBadge = ({
   item,
   ...props
 }: SideBarMenuButtonWithBadgeProps) => {
+  const { toggleSidebar, open, isMobile, state } = useSidebar();
+
   const pathname = usePathname();
   const isActive =
     (pathname === "/" && item.href === "/") || pathname === item.href;
   const Icon = iconMap[item.iconName] || AlertTriangle; // Map the icon string to the actual icon component
   return (
-    <>
-      <SidebarMenuButton asChild isActive={isActive}>
-        <Link href={item.href}>
-          {createElement(Icon, {
-            className: "h-4 w-4",
-          })}
-          <span>{item.title}</span>
-        </Link>
-      </SidebarMenuButton>
-      <SidebarMenuBadgeCounter item={item} />
-    </>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <SidebarMenuButton asChild isActive={isActive} className="">
+          <Link
+            href={item.href}
+            className="flex items-center justify-left rounded-md hover:bg-slate-100"
+            role="button"
+          >
+            {createElement(Icon, { className: "h-5 w-5" })}
+            <span className={cn(state === "collapsed" ? "hidden" : "block")}>{item.title}</span>
+            <SidebarMenuBadgeCounter item={item} />
+          </Link>
+        </SidebarMenuButton>
+      </TooltipTrigger>
+      <TooltipContent side="right">
+        {item.title}
+      </TooltipContent>
+    </Tooltip>
+
   );
 };
 
