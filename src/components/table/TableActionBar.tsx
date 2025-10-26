@@ -6,19 +6,22 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Archive, RefreshCcw } from "lucide-react";
-import { PaginationControls } from "./PaginationControl";
+import { Pagination, PaginationControl } from "./PaginationControl";
 
-export const TableActionBar = () => {
+
+interface TableActionBarProps {
+  // You can extend this with more props as needed
+  pagination?: Pagination
+}
+
+export const TableActionBar = ({ pagination }: TableActionBarProps) => {
   return (
     <div className="flex items-center space-x-2 p-2 bg-white border-b border-gray-200">
       <CheckBoxFilter />
       <IconButton title="Refresh" icon={<RefreshCcw className="w-5 h-5" />} />
       <IconButton title="Archive" icon={<Archive className="w-5 h-5" />} />
-      <PaginationControls
-        totalItems={42}
-        itemsPerPage={10}
-        currentPage={1}
-        onPageChange={(page) => console.log("Change to page:", page)}
+      <PaginationControl
+        pagination={pagination}
       />
     </div>
   );

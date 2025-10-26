@@ -6,14 +6,31 @@ import {
     ColumnDef,
     flexRender,
     getCoreRowModel,
+    Table,
     useReactTable,
 } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
 import { TableSkeleton } from "../common/TableSkeleton";
+import { Pagination } from "../table/PaginationControl";
 
 export const ContainerTableSuratMasuk = () => {
     const [data, setData] = useState<InboxItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(0);
+    const pageSize = 20;
+
+    const pageCount = Math.ceil(data.length / pageSize);
+    const pagedData = data.slice(page * pageSize, (page + 1) * pageSize);
+
+    const pagination: Pagination = {
+        page,
+        pageSize,
+        totalCount: data.length,
+        onPrev: () => setPage((p) => Math.max(p - 1, 0)),
+        onNext: () => setPage((p) => Math.min(p + 1, pageCount - 1)),
+        onSelectPage: (page: number) => setPage(page),
+    };
+
 
     useEffect(() => {
         // This effect can be used to fetch data if needed
@@ -30,12 +47,12 @@ export const ContainerTableSuratMasuk = () => {
 
     return (
         <div className="flex flex-col h-full">
-            <TableActionBar />
+            <TableActionBar pagination={pagination} />
             <div className="flex-1 overflow-auto pb-[5rem]">
                 {loading ? (
                     <TableSkeleton rows={20} />
                 ) : (
-                    <TableSuratMasuk data={data} />
+                    <TableSuratMasuk data={pagedData} />
                 )}
             </div>
         </div>
@@ -54,9 +71,10 @@ const columns: ColumnDef<InboxItem>[] = [
 
 type TableSuratMasukProps = {
     data: InboxItem[];
+    onChangePage?: (table: Table<InboxItem>, page: number) => void;
 };
 
-export const TableSuratMasuk = ({ data }: TableSuratMasukProps) => {
+export const TableSuratMasuk = ({ data, onChangePage }: TableSuratMasukProps) => {
     const table = useReactTable({
         data,
         columns,
