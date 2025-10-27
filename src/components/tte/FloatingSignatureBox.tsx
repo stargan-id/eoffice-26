@@ -71,6 +71,13 @@ export const FloatingSignatureBox = ({
     }
   };
 
+  const handleSign = () => {
+    // alert(pageInfo);
+    console.log("Sign action triggered!", pageInfo);
+  };
+
+  // Attach listeners
+
   useEffect(() => {
     if (dragging) {
       window.addEventListener("mousemove", onMouseMove);
@@ -94,12 +101,20 @@ export const FloatingSignatureBox = ({
       style={{ left: pos.x, top: pos.y, width: 180, height: 60 }}
       onMouseDown={onMouseDown}
     >
-      <div className="flex flex-col items-center justify-center h-full">
+      <div className="flex flex-col items-center justify-center h-full gap-1 p-2">
         <span className="font-bold text-blue-700">Signature Box</span>
-        {pageInfo && (
+        {/* {pageInfo && (
           <span className="text-xs text-gray-700">
             Page: {pageInfo.page}, x: {pageInfo.x}, y: {pageInfo.y}
           </span>
+        )} */}
+        {!outOfBounds && (
+          <button
+            className="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+            onClick={handleSign}
+          >
+            Sign
+          </button>
         )}
       </div>
     </div>
