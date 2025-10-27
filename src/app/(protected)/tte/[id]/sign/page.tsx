@@ -1,7 +1,7 @@
 import { ProtectedLayout } from "@/components/layout";
-import ContainerReader from "@/components/tte/ContainerReader";
+import { ContainerTte } from "@/components/tte/ContainerTte";
 
-export const TteIdPage = async ({
+export const TteIdSignPage = async ({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -11,9 +11,9 @@ export const TteIdPage = async ({
 
   return (
     <ProtectedLayout title="Tanda Tangan Elektronik">
-      <ContainerReader />
+      <ContainerTte />
     </ProtectedLayout>
   );
 };
 
-export default TteIdPage;
+export default TteIdSignPage;

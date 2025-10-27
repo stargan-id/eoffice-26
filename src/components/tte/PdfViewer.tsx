@@ -44,20 +44,29 @@ export const PdfViewer = ({
   pageCount,
 }: PdfViewerProps) => {
   const PDF_WIDTH = 800;
-  const [pdfSize, setPdfSize] = useState({ width: PDF_WIDTH, height: 1000 });
+  const CONTAINER_HEIGHT = 600; // desired viewer height (no vertical scroll)
+  const [pdfSize, setPdfSize] = useState({
+    width: PDF_WIDTH,
+    height: CONTAINER_HEIGHT,
+  });
+  const [scale, setScale] = useState(1);
   const pageRef = useRef<HTMLDivElement>(null);
   const [hasWarned, setHasWarned] = useState(false);
 
-  // Measure the actual PDF page size after render
-  useEffect(() => {
-    if (pageRef.current) {
-      const pageEl = pageRef.current.querySelector(".react-pdf__Page");
-      if (pageEl) {
-        const el = pageEl as HTMLElement;
-        setPdfSize({ width: el.offsetWidth, height: el.scrollHeight });
-      }
+  // When a page is loaded, compute a scale so the page fits the container height
+  const onPageLoadSuccess = (pdfPage: any) => {
+    try {
+      const viewport = pdfPage.getViewport({ scale: 1 });
+      const s = CONTAINER_HEIGHT / viewport.height;
+      const scaledW = viewport.width * s;
+      const scaledH = viewport.height * s;
+      setScale(s);
+      setPdfSize({ width: scaledW, height: scaledH });
+    } catch (err) {
+      // fallback: leave defaults
+      console.error("Failed to compute PDF viewport:", err);
     }
-  }, [pageNumber, file]);
+  };
 
   const outOfBounds = isSignatureOutside(
     position,
@@ -85,10 +94,10 @@ export const PdfViewer = ({
       </div> */}
       <div
         className={cn(
-          "border-2 border-gray-400 overflow-auto",
+          "border-2 border-gray-400 overflow-hidden",
           outOfBounds && "border-red-500"
         )}
-        style={{ width: PDF_WIDTH, height: 1000 }} // fixed scrollable area
+        style={{ width: pdfSize.width, height: CONTAINER_HEIGHT }} // fit to height, hide overflow
       >
         <Document file={file}>
           <div
@@ -99,7 +108,11 @@ export const PdfViewer = ({
               height: pdfSize.height,
             }}
           >
-            <Page pageNumber={pageNumber} width={PDF_WIDTH} />
+            <Page
+              pageNumber={pageNumber}
+              onLoadSuccess={onPageLoadSuccess}
+              scale={scale}
+            />
             <SignaturePlacementBox
               image={image}
               position={position}
