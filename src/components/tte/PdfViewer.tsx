@@ -5,8 +5,10 @@ import {
   SignaturePlacementBox,
 } from "@/components/tte/SignaturePlacementBox";
 import { cn } from "@/lib/utils";
+
 import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
+import { PageCallback } from "react-pdf/dist/shared/types.js";
 import { toast } from "sonner";
 
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
@@ -54,7 +56,7 @@ export const PdfViewer = ({
   const [hasWarned, setHasWarned] = useState(false);
 
   // When a page is loaded, compute a scale so the page fits the container height
-  const onPageLoadSuccess = (pdfPage: any) => {
+  const onPageLoadSuccess = (pdfPage: PageCallback) => {
     try {
       const viewport = pdfPage.getViewport({ scale: 1 });
       const s = CONTAINER_HEIGHT / viewport.height;

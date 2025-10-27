@@ -1,14 +1,23 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+
+interface Position {
+  page: number;
+  x: number;
+  y: number;
+}
 
 interface FloatingSignatureBoxProps {
   pdfContainerId?: string; // id of the PDF container for position calculation
   onPositionChange?: (info: { page: number; x: number; y: number }) => void;
+  onSign?: (position: Position | null) => void;
 }
 
 export const FloatingSignatureBox = ({
   pdfContainerId = "pdf-full-viewer",
   onPositionChange,
+  onSign,
 }: FloatingSignatureBoxProps) => {
   const boxRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -74,6 +83,8 @@ export const FloatingSignatureBox = ({
   const handleSign = () => {
     // alert(pageInfo);
     console.log("Sign action triggered!", pageInfo);
+    toast.success("Sign action triggered!", pageInfo ? {} : { description: "But position is not set." });
+    if (onSign && pageInfo) onSign(pageInfo);
   };
 
   // Attach listeners
@@ -95,10 +106,9 @@ export const FloatingSignatureBox = ({
   return (
     <div
       ref={boxRef}
-      className={`fixed z-50 border-2 bg-white/80 cursor-move shadow-lg ${
-        outOfBounds ? "border-red-500" : "border-blue-500"
-      }`}
-      style={{ left: pos.x, top: pos.y, width: 180, height: 60 }}
+      className={`fixed z-50 border-2 bg-white/80 cursor-move shadow-lg ${outOfBounds ? "border-red-500" : "border-blue-500"
+        }`}
+      style={{ left: pos.x, top: pos.y, width: 90, height: 90 }}
       onMouseDown={onMouseDown}
     >
       <div className="flex flex-col items-center justify-center h-full gap-1 p-2">

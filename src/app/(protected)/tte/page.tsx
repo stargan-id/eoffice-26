@@ -1,1 +1,3 @@
-export const TtePage = () => {};
+export const TtePage = () => { };
+
+export default TtePage;

@@ -23,7 +23,7 @@ export function SignaturePlacementBox({
   pdfWidth,
   pdfHeight,
 }: SignaturePlacementBoxProps) {
-  const boxRef = useRef(null);
+  const boxRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [start, setStart] = useState({ x: 0, y: 0 });
   const [pos, setPos] = useState(position);
@@ -32,12 +32,13 @@ export function SignaturePlacementBox({
   const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     setDragging(true);
     // Get the container (parent) element
-    const container = (boxRef.current as HTMLElement)?.parentElement;
+    if (!boxRef.current) return;
+    const container = (boxRef.current as HTMLDivElement).parentElement;
     if (container) {
       const rect = container.getBoundingClientRect();
       setStart({
-        x: e.clientX - rect.left - pos.x + container.scrollLeft,
-        y: e.clientY - rect.top - pos.y + container.scrollTop,
+        x: e.clientX - rect.left - pos.x,
+        y: e.clientY - rect.top - pos.y,
       });
     } else {
       setStart({ x: e.clientX - pos.x, y: e.clientY - pos.y });
@@ -46,7 +47,8 @@ export function SignaturePlacementBox({
 
   const onMouseMove = (e: MouseEvent) => {
     if (!dragging) return;
-    const container = (boxRef.current as HTMLElement)?.parentElement;
+    if (!boxRef.current) return;
+    const container = (boxRef.current as HTMLDivElement).parentElement;
     let newX, newY;
     if (container) {
       const rect = container.getBoundingClientRect();

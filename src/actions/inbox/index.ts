@@ -1,5 +1,5 @@
 import { mockInboxData } from "@/lib/services/mockdata/inbox";
-import { ActionResponse } from "@/types/action-response-interfaces";
+import { ActionResponse } from "@/types/action-response.types";
 import { InboxItem } from "@/types/inbox-item.types";
 
 export const getInboxData = async (): Promise<ActionResponse<InboxItem[]>> => {
