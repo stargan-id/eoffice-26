@@ -11,7 +11,7 @@ export const TteIdPage = async ({
 
   return (
     <ProtectedLayout title="Tanda Tangan Elektronik">
-      <ContainerReader />
+      <ContainerReader showSigningTools={false} />
     </ProtectedLayout>
   );
 };

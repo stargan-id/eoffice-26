@@ -1,6 +1,10 @@
 import { auth } from "@/auth";
+import {
+  DEFAULT_ROUTE_AFTER_LOGIN,
+  isLoginRoute,
+  isPublicRoute,
+} from "@/route-with-sub";
 import { NextResponse } from "next/server";
-import { DEFAULT_ROUTE_AFTER_LOGIN, isLoginRoute } from "@/route-with-sub";
 export const middleware = auth(async (req) => {
   try {
     console.log("[MIDDLEWARE] time", Date.now());
@@ -21,6 +25,12 @@ export const middleware = auth(async (req) => {
       return;
     }
 
+    // Allow public routes for everyone
+    if (isPublicRoute(nextUrl.pathname)) {
+      console.log("[MIDDLEWARE] public route");
+      return;
+    }
+
     if (isLoggedIn && !isLoginRoute(nextUrl.pathname)) {
       console.log("[MIDDLEWARE] logged in");
       return;
@@ -28,7 +38,11 @@ export const middleware = auth(async (req) => {
 
     console.log("[MIDDLEWARE] session", session);
 
-    if (!isLoggedIn && !isLoginRoute(nextUrl.pathname)) {
+    if (
+      !isLoggedIn &&
+      !isLoginRoute(nextUrl.pathname) &&
+      !isPublicRoute(nextUrl.pathname)
+    ) {
       console.log("[MIDDLEWARE] not logged in");
       const response = NextResponse.redirect(new URL("/login", req.url));
       return response;
@@ -50,7 +64,10 @@ export const middleware = auth(async (req) => {
 });
 
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next|api/auth|trpc).*)"],
+  matcher: [
+    // Only match non-API routes for authentication
+    "/((?!.+\\.[\\w]+$|_next|api/|api/auth|trpc).*)",
+  ],
 };
 
 export default middleware;
