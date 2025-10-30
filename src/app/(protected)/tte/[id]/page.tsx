@@ -8,10 +8,18 @@ export const TteIdPage = async ({
 }) => {
   // get pdf data from api using id param
   const { id } = await params;
+  const isOwner = true;
+  const isSigner = true;
+  const isSigned = false;
+
+  const showSigningTools = !isSigned && (isOwner || isSigner);
+
+  // cek user
+  // cek apakah pemilik dokumen atau orang yg diminta untuk ttd
 
   return (
     <ProtectedLayout title="Tanda Tangan Elektronik">
-      <ContainerReader showSigningTools={false} />
+      <ContainerReader documentId={id} showSigningTools={showSigningTools} />
     </ProtectedLayout>
   );
 };

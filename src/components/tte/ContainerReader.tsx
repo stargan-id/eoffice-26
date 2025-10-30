@@ -5,6 +5,8 @@ const FloatingPdfViewer = dynamic(() => import("./FloatingPdfViewer"), {
   ssr: false,
 });
 
+import { PdfFullViewerSkeleton } from "./PdfFullViewerSkeleton";
+
 import { signDocument } from "@/actions/tte";
 import {
   Dialog,
@@ -13,18 +15,27 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ConfirmSignDocumentSchema } from "@/zod/schema/tte";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 //import { FloatingPdfViewer } from "./FloatingPdfViewer";
+import { getPdfDocument } from "@/actions/tte/document";
 import FloatingSignatureBox from "./FloatingSignatureBox";
 import { FormTte } from "./FormTte";
+// import { PdfFullViewerSkeleton } from "./PdfFullViewer";
 
 interface ContainerReaderProps {
+  documentId: string;
   showSigningTools: boolean;
 }
 
-export const ContainerReader = ({ showSigningTools }: ContainerReaderProps) => {
+export const ContainerReader = ({
+  documentId,
+  showSigningTools,
+}: ContainerReaderProps) => {
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
+  const [isSigned, setIsSigned] = useState<boolean>(!showSigningTools);
+  const [isSignRequested, setIsSignRequested] = useState<boolean>(false);
+  const [pdfFile, setPdfFile] = useState<Blob | null>(null);
 
   const schema = ConfirmSignDocumentSchema;
   type FormValues = z.infer<typeof schema>;
@@ -91,12 +102,22 @@ export const ContainerReader = ({ showSigningTools }: ContainerReaderProps) => {
     }
   };
 
+  useEffect(() => {
+    const pdfDocument = async () => {
+      const response = await getPdfDocument(documentId);
+      if (response.success) {
+        setPdfFile(response.data);
+      }
+    };
+    pdfDocument();
+  }, [documentId]);
+
   return (
     <>
       <div id="pdf-full-viewer" className="max-w-4xl mx-auto">
-        <PdfFullViewer file={`/sample.pdf`} />
+        {pdfFile ? <PdfFullViewer file={pdfFile} /> : <PdfFullViewerSkeleton />}
       </div>
-      {showSigningTools && (
+      {showSigningTools && pdfFile && (
         <FloatingSignatureBox
           pdfContainerId="pdf-full-viewer"
           onSign={handleOnSign}

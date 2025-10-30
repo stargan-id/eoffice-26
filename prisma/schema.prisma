@@ -105,6 +105,8 @@ model User {
   agenda                              Agenda[]                            @relation(name: "AgendaUser")
   naskahDinasKeluarYangDitandatangani NaskahDinasKeluar[]                 @relation(name: "PenandatanganNaskahDinasKeluar")
   naskahDinasKeluarYangDidraft        NaskahDinasKeluar[]                 @relation(name: "PembuatDraftNaskahDinasKeluar")
+  signRequest                         SignRequest[]                       @relation(name: "SignRequestUser")
+  signatories                         Signatory[]                         @relation(name: "SignatoryUser")
 
   @@map("users")
 }
@@ -368,7 +370,7 @@ model JenisNaskahDinas {
   kodeJenis                 String    @map("kode_jenis")
   keterangan                String? // e.g., "NaskahDinas Keputusan", "NaskahDinas Edaran", "Nota Dinas", "NaskahDinas Perintah", "NaskahDinas Undangan"
   singkatan                 String? // e.g., "NaskahDinas Keputusan" -> "SK", "NaskahDinas Edaran" -> "SE", "Nota Dinas" -> "Nodinas", "NaskahDinas Perintah" -> "SP", "NaskahDinas Undangan" -> "SU"
-  templatePenomoran       String?   @map("template_penomoran") // e.g., "SK/{nomor}/{bulan}/{tahun}", "SE/{nomor}/{bulan}/{tahun}"
+  templatePenomoran         String?   @map("template_penomoran") // e.g., "SK/{nomor}/{bulan}/{tahun}", "SE/{nomor}/{bulan}/{tahun}"
   kewenanganPenandatanganan String?   @map("kewenangan_penandatanganan") // e.g., "Menteri", "Sekretaris Jenderal", "Direktur Jenderal", "Kepala"
   level                     Int? // Untuk mengatur level kewenangan, misalnya 1 untuk Menteri, 2 untuk Sekretaris Jenderal, dst.
   deskripsi                 String?
@@ -384,27 +386,27 @@ model JenisNaskahDinas {
 }
 
 model KelompokNomorUrut {
-  id            String    @id @default(cuid())
-  namaKelompok          String    @unique @map("nama_kelompok") // e.g., "NaskahDinas Keputusan", "NaskahDinas Edaran", "Nota Dinas", "NaskahDinas Perintah", "NaskahDinas Undangan"
-  kodeKelompok          String    @map("kode_kelompok") // e.g., "NaskahDinas Keputusan" -> "SK", "NaskahDinas Edaran" -> "SE", "Nota Dinas" -> "Nodinas", "NaskahDinas Perintah" -> "SP", "NaskahDinas Undangan" -> "SU"
-  deskripsi     String?
-  createdBy     String    @map("created_by")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedBy     String?   @map("updated_by")
-  updatedAt     DateTime? @updatedAt @map("updated_at")
+  id           String    @id @default(cuid())
+  namaKelompok String    @unique @map("nama_kelompok") // e.g., "NaskahDinas Keputusan", "NaskahDinas Edaran", "Nota Dinas", "NaskahDinas Perintah", "NaskahDinas Undangan"
+  kodeKelompok String    @map("kode_kelompok") // e.g., "NaskahDinas Keputusan" -> "SK", "NaskahDinas Edaran" -> "SE", "Nota Dinas" -> "Nodinas", "NaskahDinas Perintah" -> "SP", "NaskahDinas Undangan" -> "SU"
+  deskripsi    String?
+  createdBy    String    @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedBy    String?   @map("updated_by")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
 
   @@map("kelompok_nomor_urut")
 }
 
 model KomponenPenomoran {
-  id            String    @id @default(cuid())
-  namaKomponen          String    @unique @map("nama_komponen") // e.g., "Tahun", "Bulan", "Kode Organisasi", "Kode Bagian", "Nomor Urut"
-  kodeKomponen          String    @map("kode_komponen") // e.g.,"Tahun Romawi"-> XX, "Tahun4" -> "YYYY", "Tahun2" -> "YY", "Bulan2" -> "MM", , "Bulan1" -> "M", "Bulan Nama" -> "Bulan", "Kode Organisasi" -> "ORG", "klasifikasi" -> "Klasifikasi", "keamanan" -> "Keamanan", "Nomor Urut" -> "nomor"
-  deskripsi     String?
-  createdBy     String    @map("created_by")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedBy     String?   @map("updated_by")
-  updatedAt     DateTime? @updatedAt @map("updated_at")
+  id           String    @id @default(cuid())
+  namaKomponen String    @unique @map("nama_komponen") // e.g., "Tahun", "Bulan", "Kode Organisasi", "Kode Bagian", "Nomor Urut"
+  kodeKomponen String    @map("kode_komponen") // e.g.,"Tahun Romawi"-> XX, "Tahun4" -> "YYYY", "Tahun2" -> "YY", "Bulan2" -> "MM", , "Bulan1" -> "M", "Bulan Nama" -> "Bulan", "Kode Organisasi" -> "ORG", "klasifikasi" -> "Klasifikasi", "keamanan" -> "Keamanan", "Nomor Urut" -> "nomor"
+  deskripsi    String?
+  createdBy    String    @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedBy    String?   @map("updated_by")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
 
   @@map("bagian_penomoran")
 }
@@ -442,14 +444,14 @@ model DerajatKecepatanNaskahDinas {
 }
 
 model TingkatKeamananNaskahDinas {
-  id          String    @id @default(cuid())
+  id                  String    @id @default(cuid())
   namaTingkatKeamanan String    @unique @map("nama_tingkat")
   kodeTingkatKeamanan String    @map("kode_tingkat")
-  deskripsi   String?
-  createdBy   String    @map("created_by")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedBy   String?   @map("updated_by")
-  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deskripsi           String?
+  createdBy           String    @map("created_by")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedBy           String?   @map("updated_by")
+  updatedAt           DateTime? @updatedAt @map("updated_at")
 
   naskahDinasMasuk  NaskahDinasMasuk[]  @relation(name: "TingkatKeamananNaskahDinasMasuk")
   naskahDinasKeluar NaskahDinasKeluar[]
@@ -497,7 +499,7 @@ model NaskahDinasMasuk {
   jenisNaskahDinasId String?
 
   penerimaNaskahDinasMasuk PenerimaNaskahDinasMasuk[] @relation(name: "PenerimaNaskahDinasMasuk")
-  dokumenNaskahDinasMasuk DokumenNaskahDinasMasuk[] @relation(name: "DokumenNaskahDinasMasuk")
+  dokumenNaskahDinasMasuk  DokumenNaskahDinasMasuk[]  @relation(name: "DokumenNaskahDinasMasuk")
 
   @@map("naskah_dinas_masuk")
 }
@@ -826,4 +828,61 @@ model Agenda {
   user User @relation(name: "AgendaUser", fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("agenda")
+}
+
+enum SignRequestStatus {
+  PENDING
+  IN_PROGRESS // for multiple signatories
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model SignRequest {
+  id             String            @id @default(cuid())
+  subject        String
+  message        String
+  notes          String
+  userId         String            @map("user_id")
+  fileUrl        String
+  status         SignRequestStatus
+  completion     String // 1/5, 2/5, etc. lihat dari signatories
+  eksternalRefId String?           @map("eksternal_ref_id")
+  user           User              @relation(name: "SignRequestUser", fields: [userId], references: [id])
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime?         @updatedAt
+  Signatory      Signatory[]       @relation(name: "SignatorySignRequest")
+
+  @@map("sign_requests")
+}
+
+enum SigningStatus {
+  PENDING
+  SIGNED
+  REJECTED
+  EXPIRED
+}
+
+enum SignVisibility {
+  VISIBLE
+  INVISIBLE
+}
+
+model Signatory {
+  id             String         @id @default(cuid())
+  signReqId      String         @map("sign_req_id")
+  ordinal        Int
+  userId         String         @map("user_id")
+  status         SigningStatus
+  signVisibility SignVisibility @map("sign_visibility")
+
+  createdAt DateTime  @default(now())
+  signedAt  DateTime? @map("signed_at")
+  notes     String
+  updatedAt DateTime? @updatedAt
+
+  signRequest SignRequest @relation(name: "SignatorySignRequest", fields: [signReqId], references: [id])
+  user        User        @relation(name: "SignatoryUser", fields: [userId], references: [id])
+
+  @@map("signatories")
 }
