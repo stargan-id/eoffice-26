@@ -10,6 +10,7 @@ import {
   Table,
   useReactTable,
 } from "@tanstack/react-table";
+import { useRouter } from "next/dist/client/components/navigation";
 import { useEffect, useState } from "react";
 import { TableSkeleton } from "../common/TableSkeleton";
 import { Pagination } from "../table/PaginationControl";
@@ -89,6 +90,8 @@ export const TableSignRequest = ({ data }: TableSignRequestProps) => {
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const router = useRouter();
+
   return (
     <>
       {/* Desktop Table View */}
@@ -115,6 +118,8 @@ export const TableSignRequest = ({ data }: TableSignRequestProps) => {
             {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
+                onClick={() => router.push(`/tte/${row.original.id}`)}
+
                 className={cn(
                   "hover:bg-gray-100 transition cursor-pointer dark:hover:bg-gray-700",
                   row.original.status === "PENDING" ? "font-bold" : ""
