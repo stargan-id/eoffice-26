@@ -2,7 +2,7 @@
 import { getSignRequests } from "@/actions/tte/sign-request";
 import { TableActionBar } from "@/components/table/TableActionBar";
 import { cn } from "@/lib/utils";
-import { SignRequest } from "@prisma/client";
+import { SignRequest, SignRequestForUser } from "@/types/tte/sign-request";
 import {
   ColumnDef,
   flexRender,
@@ -15,7 +15,7 @@ import { TableSkeleton } from "../common/TableSkeleton";
 import { Pagination } from "../table/PaginationControl";
 
 export const ContainerTableSignRequest = () => {
-  const [data, setData] = useState<SignRequest[]>([]);
+  const [data, setData] = useState<SignRequestForUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const pageSize = 20;
@@ -62,19 +62,24 @@ export const ContainerTableSignRequest = () => {
 export default ContainerTableSignRequest;
 
 const columns: ColumnDef<SignRequest>[] = [
-  { accessorKey: "sender", header: "Pengirim" },
+  { accessorKey: "user.name", header: "Pengirim" },
   { accessorKey: "subject", header: "Subjek" },
   {
-    accessorKey: "receivedAt",
+    accessorKey: "createdAt",
     header: "Tanggal",
-    cell: (info) => new Date(info.getValue() as string).toLocaleDateString(),
+    cell: (info) =>
+      new Date(info.getValue() as string).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
   },
   // { accessorKey: "status", header: "Status" },
 ];
 
 type TableSignRequestProps = {
-  data: SignRequest[];
-  onChangePage?: (table: Table<SignRequest>, page: number) => void;
+  data: SignRequestForUser[];
+  onChangePage?: (table: Table<SignRequestForUser>, page: number) => void;
 };
 
 export const TableSignRequest = ({ data }: TableSignRequestProps) => {
@@ -112,7 +117,7 @@ export const TableSignRequest = ({ data }: TableSignRequestProps) => {
                 key={row.id}
                 className={cn(
                   "hover:bg-gray-100 transition cursor-pointer dark:hover:bg-gray-700",
-                  row.original.status === "unread" ? "font-bold" : ""
+                  row.original.status === "PENDING" ? "font-bold" : ""
                 )}
               >
                 {row.getVisibleCells().map((cell) => (
@@ -137,13 +142,17 @@ export const TableSignRequest = ({ data }: TableSignRequestProps) => {
             className="border-b border-gray-200 p-4 hover:bg-gray-50 transition cursor-pointer dark:border-gray-700 dark:hover:bg-gray-800"
           >
             <div className="font-semibold text-gray-800 dark:text-gray-200">
-              {item.sender}
+              {item.user.name}
             </div>
             <div className="text-sm text-gray-600 mt-1 line-clamp-2 text-justify dark:text-gray-400">
               {item.subject}
             </div>
             <div className="text-xs text-gray-500 mt-1 dark:text-gray-500">
-              {new Date(item.receivedAt).toLocaleDateString()}
+              {new Date(item.createdAt).toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })}
             </div>
           </div>
         ))}

@@ -844,13 +844,13 @@ model SignRequest {
   message        String
   notes          String
   userId         String            @map("user_id")
-  fileUrl        String
+  fileUrl        String            @default("") @map("file_url")
   status         SignRequestStatus
   completion     String // 1/5, 2/5, etc. lihat dari signatories
   eksternalRefId String?           @map("eksternal_ref_id")
   user           User              @relation(name: "SignRequestUser", fields: [userId], references: [id])
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime?         @updatedAt
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime?         @updatedAt @map("updated_at")
   Signatory      Signatory[]       @relation(name: "SignatorySignRequest")
 
   @@map("sign_requests")
@@ -876,13 +876,14 @@ model Signatory {
   status         SigningStatus
   signVisibility SignVisibility @map("sign_visibility")
 
-  createdAt DateTime  @default(now())
+  createdAt DateTime  @default(now()) @map("created_at")
   signedAt  DateTime? @map("signed_at")
   notes     String
-  updatedAt DateTime? @updatedAt
+  updatedAt DateTime? @updatedAt @map("updated_at")
 
   signRequest SignRequest @relation(name: "SignatorySignRequest", fields: [signReqId], references: [id])
   user        User        @relation(name: "SignatoryUser", fields: [userId], references: [id])
 
+  @@unique([signReqId, userId])
   @@map("signatories")
 }

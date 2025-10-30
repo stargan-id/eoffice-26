@@ -29,13 +29,17 @@ async function main() {
     });
 
     // Create 1-3 signatories per sign request
-    const signatoryCount = faker.number.int({ min: 1, max: 3 });
+    const allUsers = await db.user.findMany();
+    const signatoryCount = Math.min(faker.number.int({ min: 1, max: 3 }), allUsers.length);
+    // Ambil user random tanpa duplikat
+    const shuffledUsers = faker.helpers.shuffle(allUsers).slice(0, signatoryCount);
     for (let j = 0; j < signatoryCount; j++) {
+      const randomUser = shuffledUsers[j];
       await db.signatory.create({
         data: {
           signReqId: signRequest.id,
           ordinal: j + 1,
-          userId: user.id,
+          userId: randomUser.id,
           status: "PENDING",
           signVisibility: "VISIBLE",
           notes: faker.lorem.words(2),

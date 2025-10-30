@@ -1,13 +1,15 @@
-import { getSignRequests as getSignRequestsService } from "@/lib/services/tte";
+import { getSignRequestsForUser } from "@/lib/services/tte";
 import { ActionResponse } from "@/types/action-response.types";
-import { SignRequest } from "@prisma/client";
+import { SignRequestForUser } from "@/types/tte/sign-request";
+
+const mockForUserId = "cmhdeyczf00009ycw4hahy4sh";
 
 export const getSignRequests = async (): Promise<
-  ActionResponse<SignRequest[]>
+  ActionResponse<SignRequestForUser[]>
 > => {
   // implementasi pengambilan daftar sign request dari backend
   try {
-    const result = await getSignRequestsService();
+    const result = await getSignRequestsForUser(mockForUserId);
     return {
       success: true,
       data: result,
@@ -20,5 +22,6 @@ export const getSignRequests = async (): Promise<
     };
   }
 };
+
 
 export default getSignRequests;
