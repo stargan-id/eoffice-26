@@ -40,7 +40,7 @@ async function main() {
           signReqId: signRequest.id,
           ordinal: j + 1,
           userId: randomUser.id,
-          status: "PENDING",
+          status: "WAITING",
           signVisibility: "VISIBLE",
           notes: faker.lorem.words(2),
         },

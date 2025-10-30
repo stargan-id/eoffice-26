@@ -1,33 +1,37 @@
-"use client";
-import { getSignRequests } from "@/actions/tte/sign-request";
-import { TableActionBar } from "@/components/table/TableActionBar";
-import { cn } from "@/lib/utils";
-import { SignRequest, SignRequestForUser } from "@/types/tte/sign-request";
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  Table,
-  useReactTable,
-} from "@tanstack/react-table";
-import { useRouter } from "next/dist/client/components/navigation";
-import { useEffect, useState } from "react";
-import { TableSkeleton } from "../common/TableSkeleton";
-import { Pagination } from "../table/PaginationControl";
+'use client';
+import { getSignRequests } from '@/actions/tte/sign-request';
+import { TableActionBar } from '@/components/table/TableActionBar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SignRequest, SignRequestForUser } from '@/types/tte/sign-request';
+import { useEffect, useState } from 'react';
+import { TableSkeleton } from '../common/TableSkeleton';
+import { Pagination } from '../table/PaginationControl';
+import { TableSignRequestForUser } from './TableSignRequestForUser';
 
 export const ContainerTableSignRequest = () => {
-  const [data, setData] = useState<SignRequestForUser[]>([]);
+  const [dataSignRequestForUser, setDataSignRequestForUser] = useState<
+    SignRequestForUser[]
+  >([]);
+  const [dataSignRequestsByUser, setDataSignRequestsByUser] = useState<
+    SignRequest[]
+  >([]);
+  const [dataSignRequestsSelf, setDataSignRequestsSelf] = useState<
+    SignRequest[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const pageSize = 20;
 
-  const pageCount = Math.ceil(data.length / pageSize);
-  const pagedData = data.slice(page * pageSize, (page + 1) * pageSize);
+  const pageCount = Math.ceil(dataSignRequestForUser.length / pageSize);
+  const pagedData = dataSignRequestForUser.slice(
+    page * pageSize,
+    (page + 1) * pageSize
+  );
 
   const pagination: Pagination = {
     page,
     pageSize,
-    totalCount: data.length,
+    totalCount: dataSignRequestForUser.length,
     onPrev: () => setPage((p) => Math.max(p - 1, 0)),
     onNext: () => setPage((p) => Math.min(p + 1, pageCount - 1)),
     onSelectPage: (page: number) => setPage(page),
@@ -39,7 +43,7 @@ export const ContainerTableSignRequest = () => {
       // Simulate data fetching
       const result = await getSignRequests();
       if (result.success) {
-        setData(result.data);
+        setDataSignRequestForUser(result.data);
       }
       setLoading(false);
     };
@@ -53,7 +57,90 @@ export const ContainerTableSignRequest = () => {
         {loading ? (
           <TableSkeleton rows={20} />
         ) : (
-          <TableSignRequest data={pagedData} />
+          <Tabs defaultValue="all" className="w-full h-full">
+            <TabsList className="flex gap-2 bg-transparent h-12 justify-start items-end rounded-none shadow-none p-0 w-full border-b border-gray-200">
+              <TabsTrigger
+                value="all"
+                className="tabs-trigger h-12 min-w-[120px] max-w-[220px] px-4 pb-2 flex items-center justify-start gap-2 text-gray-700 font-medium bg-transparent rounded-none shadow-none ring-0 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+                Semua
+              </TabsTrigger>
+              <TabsTrigger
+                value="pending"
+                className="tabs-trigger h-12 min-w-[120px] max-w-[220px] px-4 pb-2 flex items-center justify-start gap-2 text-gray-700 font-medium bg-transparent rounded-none shadow-none ring-0 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Menunggu
+              </TabsTrigger>
+              <TabsTrigger
+                value="done"
+                className="tabs-trigger h-12 min-w-[120px] max-w-[220px] px-4 pb-2 flex items-center justify-start gap-2 text-gray-700 font-medium bg-transparent rounded-none shadow-none ring-0 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Selesai
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="all" className="h-full">
+              <TableSignRequestForUser data={pagedData} />
+            </TabsContent>
+            <TabsContent value="pending" className="h-full">
+              {/* Filter pagedData for waiting/in progress status */}
+              <TableSignRequestForUser
+                data={pagedData.filter(
+                  (item) =>
+                    item.status === 'PENDING' || item.status === 'IN_PROGRESS'
+                )}
+              />
+            </TabsContent>
+            <TabsContent value="done" className="h-full">
+              {/* Filter pagedData for completed/cancelled/failed status */}
+              <TableSignRequestForUser
+                data={pagedData.filter((item) =>
+                  ['COMPLETED', 'FAILED', 'CANCELLED'].includes(item.status)
+                )}
+              />
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </div>
@@ -61,107 +148,3 @@ export const ContainerTableSignRequest = () => {
 };
 
 export default ContainerTableSignRequest;
-
-const columns: ColumnDef<SignRequest>[] = [
-  { accessorKey: "user.name", header: "Pengirim" },
-  { accessorKey: "subject", header: "Subjek" },
-  {
-    accessorKey: "createdAt",
-    header: "Tanggal",
-    cell: (info) =>
-      new Date(info.getValue() as string).toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }),
-  },
-  // { accessorKey: "status", header: "Status" },
-];
-
-type TableSignRequestProps = {
-  data: SignRequestForUser[];
-  onChangePage?: (table: Table<SignRequestForUser>, page: number) => void;
-};
-
-export const TableSignRequest = ({ data }: TableSignRequestProps) => {
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
-  const router = useRouter();
-
-  return (
-    <>
-      {/* Desktop Table View */}
-      <div className="hidden md:block overflow-x-auto pr-4">
-        <table className="min-w-full">
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="px-4 py-2 text-left text-sm font-semibold text-gray-600 bg-gray-50 dark:text-gray-300 dark:bg-gray-800"
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                onClick={() => router.push(`/tte/${row.original.id}`)}
-
-                className={cn(
-                  "hover:bg-gray-100 transition cursor-pointer dark:hover:bg-gray-700",
-                  row.original.status === "PENDING" ? "font-bold" : ""
-                )}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200"
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Card View */}
-      <div className="block md:hidden">
-        {data.map((item) => (
-          <div
-            key={item.id}
-            className="border-b border-gray-200 p-4 hover:bg-gray-50 transition cursor-pointer dark:border-gray-700 dark:hover:bg-gray-800"
-          >
-            <div className="font-semibold text-gray-800 dark:text-gray-200">
-              {item.user.name}
-            </div>
-            <div className="text-sm text-gray-600 mt-1 line-clamp-2 text-justify dark:text-gray-400">
-              {item.subject}
-            </div>
-            <div className="text-xs text-gray-500 mt-1 dark:text-gray-500">
-              {new Date(item.createdAt).toLocaleDateString("id-ID", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
-  );
-};

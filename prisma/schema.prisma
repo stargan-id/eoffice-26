@@ -857,7 +857,7 @@ model SignRequest {
 }
 
 enum SigningStatus {
-  PENDING
+  WAITING
   SIGNED
   REJECTED
   EXPIRED

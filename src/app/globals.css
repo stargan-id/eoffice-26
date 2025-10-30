@@ -1,8 +1,8 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
-@import "react-pdf/dist/Page/TextLayer.css";
-@import "react-pdf/dist/Page/AnnotationLayer.css";
+@import 'react-pdf/dist/Page/TextLayer.css';
+@import 'react-pdf/dist/Page/AnnotationLayer.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -126,7 +126,8 @@
 
 /* Custom animations for login page */
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -135,7 +136,8 @@
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -180,6 +182,16 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.tabs-trigger[data-state='active'] {
+  border-bottom: 4px solid #2563eb; /* Tailwind blue-600 */
+  color: #2563eb;
+  font-weight: bold;
 }

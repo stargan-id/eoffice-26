@@ -1,26 +1,26 @@
-"use client";
-import dynamic from "next/dynamic";
-const PdfFullViewer = dynamic(() => import("./PdfFullViewer"), { ssr: false });
-const FloatingPdfViewer = dynamic(() => import("./FloatingPdfViewer"), {
+'use client';
+import dynamic from 'next/dynamic';
+const PdfFullViewer = dynamic(() => import('./PdfFullViewer'), { ssr: false });
+const FloatingPdfViewer = dynamic(() => import('./FloatingPdfViewer'), {
   ssr: false,
 });
 
-import { PdfFullViewerSkeleton } from "./PdfFullViewerSkeleton";
+import { PdfFullViewerSkeleton } from './PdfFullViewerSkeleton';
 
-import { signDocument } from "@/actions/tte";
+import { signDocument } from '@/actions/tte';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { ConfirmSignDocumentSchema } from "@/zod/schema/tte";
-import { useEffect, useState } from "react";
-import { z } from "zod";
+} from '@/components/ui/dialog';
+import { ConfirmSignDocumentSchema } from '@/zod/schema/tte';
+import { useEffect, useState } from 'react';
+import { z } from 'zod';
 //import { FloatingPdfViewer } from "./FloatingPdfViewer";
-import { getPdfDocument } from "@/actions/tte/document";
-import FloatingSignatureBox from "./FloatingSignatureBox";
-import { FormTte } from "./FormTte";
+import { getPdfDocument } from '@/actions/tte/document';
+import FloatingSignatureBox from './FloatingSignatureBox';
+import { FormTte } from './FormTte';
 // import { PdfFullViewerSkeleton } from "./PdfFullViewer";
 
 interface ContainerReaderProps {
@@ -41,17 +41,17 @@ export const ContainerReader = ({
   type FormValues = z.infer<typeof schema>;
 
   const [values, setValues] = useState<FormValues>({
-    tampilan: "visible",
-    halaman: "1",
-    passphrase: "",
-    xAxis: "0",
-    yAxis: "0",
+    tampilan: 'visible',
+    page: '1',
+    passphrase: '',
+    xAxis: '0',
+    yAxis: '0',
   });
 
   const handleOnSign = async (
     position: { page: number; x: number; y: number } | null
   ) => {
-    console.log("Signature position:", position);
+    console.log('Signature position:', position);
     // Here you can call a server action to save the signature position
 
     // const formData = new FormData();
@@ -60,7 +60,7 @@ export const ContainerReader = ({
     if (position) {
       const v: FormValues = {
         ...values,
-        halaman: position.page.toString(),
+        page: position.page.toString(),
         yAxis: position.y.toString(),
         xAxis: position.x.toString(),
       };
@@ -72,7 +72,7 @@ export const ContainerReader = ({
   };
 
   const handleOnSubmit = async (data: FormValues) => {
-    console.log("Form data submitted:", data);
+    console.log('Form data submitted:', data);
     const v: FormValues = {
       ...values,
       passphrase: data.passphrase,
@@ -82,23 +82,25 @@ export const ContainerReader = ({
 
     // Convert v to FormData
     const formData = new FormData();
-    formData.append("passphrase", v.passphrase);
-    formData.append("tampilan", v.tampilan);
-    if (v.halaman) formData.append("halaman", v.halaman);
-    if (v.xAxis) formData.append("xAxis", v.xAxis);
-    if (v.yAxis) formData.append("yAxis", v.yAxis);
+    formData.append('passphrase', v.passphrase);
+    formData.append('tampilan', v.tampilan);
+    if (v.page) formData.append('page', v.page);
+    if (v.xAxis) formData.append('xAxis', v.xAxis);
+    if (v.yAxis) formData.append('yAxis', v.yAxis);
 
     // If you have file input, append file here
     // formData.append("file", fileInput.files[0]);
 
     const res = await signDocument(formData);
-    // console.log("Sign document response:", res);
+    //console.log('Sign document response:', res);
 
     // nantinya simpan di lokal
 
     if (res.success) {
       // // send data to API and close dialog
       setShowConfirmation(false);
+      setPdfFile(res.data.file);
+      setIsSigned(true);
     }
   };
 

@@ -1,22 +1,22 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Batas ukuran file (contoh: 5MB)
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
-const ACCEPTED_PDF_TYPES = ["application/pdf"];
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
+const ACCEPTED_PDF_TYPES = ['application/pdf'];
 
 // Helper untuk validasi file
 const fileSchema = (types: string[]) =>
   z
     .instanceof(File)
-    .refine((file) => file.size > 0, "File cannot be empty.")
+    .refine((file) => file.size > 0, 'File cannot be empty.')
     .refine((file) => file.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
     .refine((file) => types.includes(file.type), `Unsupported file type.`);
 
 // Skema untuk /api/user/registrasi
 export const RegisterUserSchema = z.object({
-  nama: z.string().min(1, "Nama is required."),
-  email: z.email("Invalid email address."),
+  nama: z.string().min(1, 'Nama is required.'),
+  email: z.email('Invalid email address.'),
   surat_rekomendasi: fileSchema(ACCEPTED_PDF_TYPES),
 
   // Opsional
@@ -33,15 +33,15 @@ export const RegisterUserSchema = z.object({
 
 // Skema untuk /api/user/keystore
 export const UploadKeystoreSchema = z.object({
-  nik: z.string().min(1, "NIK is required."),
-  passphrase: z.string().min(1, "Passphrase is required."),
-  keystore: fileSchema(["application/x-pkcs12"]), // .p12 file
+  nik: z.string().min(1, 'NIK is required.'),
+  passphrase: z.string().min(1, 'Passphrase is required.'),
+  keystore: fileSchema(['application/x-pkcs12']), // .p12 file
 });
 
 export const ConfirmSignDocumentSchema = z.object({
-  passphrase: z.string().min(1, "Passphrase is required."),
-  tampilan: z.enum(["visible", "invisible"]),
-  halaman: z.string().optional(),
+  passphrase: z.string().min(1, 'Passphrase is required.'),
+  tampilan: z.enum(['visible', 'invisible']),
+  page: z.string().optional(),
   xAxis: z.string().optional(),
   yAxis: z.string().optional(),
 });
@@ -50,15 +50,15 @@ export const SignDocumentSchema = z
   .object({
     // Bidang yang selalu wajib
     file: fileSchema(ACCEPTED_PDF_TYPES),
-    nik: z.string().min(1, "NIK is required."),
-    passphrase: z.string().min(1, "Passphrase is required."),
-    tampilan: z.enum(["visible", "invisible"]),
+    nik: z.string().min(1, 'NIK is required.'),
+    passphrase: z.string().min(1, 'Passphrase is required.'),
+    tampilan: z.enum(['visible', 'invisible']),
 
     // Bidang opsional / kondisional
-    image: z.enum(["true", "false"]).optional(),
+    image: z.enum(['true', 'false']).optional(),
     imageTTD: fileSchema(ACCEPTED_IMAGE_TYPES).optional(),
-    linkQR: z.url({ message: "Invalid URL" }).optional().or(z.literal("")),
-    halaman: z.string().optional(),
+    linkQR: z.url({ message: 'Invalid URL' }).optional().or(z.literal('')),
+    // halaman: z.string().optional(),
     page: z.string().optional(),
     xAxis: z.string().optional(),
     yAxis: z.string().optional(),
@@ -72,16 +72,16 @@ export const SignDocumentSchema = z
   .refine(
     (data) => {
       // Validasi logika 'visible'
-      if (data.tampilan === "visible") {
+      if (data.tampilan === 'visible') {
         // Jika visible, width dan height wajib
         if (!data.width || !data.height) return false;
 
         // Jika image 'false', linkQR wajib
-        if (data.image === "false" && !data.linkQR) return false;
+        if (data.image === 'false' && !data.linkQR) return false;
 
         // Jika image 'true', imageTTD (file) wajib ada dan tidak kosong
         if (
-          data.image === "true" &&
+          data.image === 'true' &&
           (!data.imageTTD || data.imageTTD.size === 0)
         )
           return false;
