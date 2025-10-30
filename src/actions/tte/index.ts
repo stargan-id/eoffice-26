@@ -38,10 +38,10 @@ export async function signDocument(
     type: 'application/pdf',
   });
   rawData.nik = '3524142010820005';
-  rawData.width = '100';
-  rawData.height = '100';
+  rawData.width = (parseInt(formData.get('xAxis') as string) + 100).toString();
+  rawData.height = (parseInt(formData.get('yAxis') as string) + 100).toString();
   rawData.image = 'false';
-  rawData.linkQR = 'https://example.com/verify/12345';
+  rawData.linkQR = 'https://example.com/verify/123456';
   rawData.passphrase = 'P@ssw0rdtte';
   rawData.page = '1';
 

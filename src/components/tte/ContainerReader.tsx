@@ -99,8 +99,8 @@ export const ContainerReader = ({
     if (res.success) {
       // // send data to API and close dialog
       setShowConfirmation(false);
-      setPdfFile(res.data.file);
-      setIsSigned(true);
+      // setPdfFile(res.data.file);
+      // setIsSigned(true);
     }
   };
 

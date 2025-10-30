@@ -1,6 +1,6 @@
-"use client";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+'use client';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 interface Position {
   page: number;
@@ -15,7 +15,7 @@ interface FloatingSignatureBoxProps {
 }
 
 export const FloatingSignatureBox = ({
-  pdfContainerId = "pdf-full-viewer",
+  pdfContainerId = 'pdf-full-viewer',
   onPositionChange,
   onSign,
 }: FloatingSignatureBoxProps) => {
@@ -29,6 +29,31 @@ export const FloatingSignatureBox = ({
     y: number;
   } | null>(null);
   const [outOfBounds, setOutOfBounds] = useState(false);
+
+  const PDF_WIDTH_PT = 8.27 * 72; // 596 points (A4 width)
+  const PDF_HEIGHT_PT = 11.69 * 72; // 841 points (A4 height)
+
+  // PDF box size in points
+  const BOX_WIDTH_PT = 100;
+  const BOX_HEIGHT_PT = 100;
+
+  // Calculate initial box size in CSS pixels based on PDF scale
+  const pdfEl =
+    typeof window !== 'undefined'
+      ? document.getElementById(pdfContainerId)
+      : null;
+  let boxWidthPx = 100;
+  let boxHeightPx = 100;
+  if (pdfEl) {
+    const pageEls = pdfEl.querySelectorAll('.react-pdf__Page');
+    if (pageEls.length > 0) {
+      const pageRect = (pageEls[0] as HTMLElement).getBoundingClientRect();
+      const scaleX = pageRect.width / (8.27 * 72);
+      const scaleY = pageRect.height / (11.69 * 72);
+      boxWidthPx = BOX_WIDTH_PT * scaleX;
+      boxHeightPx = BOX_HEIGHT_PT * scaleY;
+    }
+  }
 
   // Drag logic
   const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -47,7 +72,7 @@ export const FloatingSignatureBox = ({
     const pdfEl = document.getElementById(pdfContainerId);
     if (pdfEl && boxRef.current) {
       const boxRect = boxRef.current.getBoundingClientRect();
-      const pageEls = pdfEl.querySelectorAll(".react-pdf__Page");
+      const pageEls = pdfEl.querySelectorAll('.react-pdf__Page');
       let foundPage = null;
       for (let i = 0; i < pageEls.length; i++) {
         const pageRect = (pageEls[i] as HTMLElement).getBoundingClientRect();
@@ -60,15 +85,20 @@ export const FloatingSignatureBox = ({
         ) {
           foundPage = i + 1;
           // Calculate x/y relative to page
-          const x = boxRect.left - pageRect.left;
-          const y = boxRect.top - pageRect.top;
-          setPageInfo({ page: foundPage, x: Math.round(x), y: Math.round(y) });
+          const xPx = boxRect.left - pageRect.left;
+          const yPx = pageRect.bottom - boxRect.bottom;
+          // Scale to PDF points
+          const scaleX = PDF_WIDTH_PT / pageRect.width;
+          const scaleY = PDF_HEIGHT_PT / pageRect.height;
+          const x = Math.round(xPx * scaleX);
+          const y = Math.round(yPx * scaleY);
+          setPageInfo({ page: foundPage, x, y });
           setOutOfBounds(false);
           if (onPositionChange)
             onPositionChange({
               page: foundPage,
-              x: Math.round(x),
-              y: Math.round(y),
+              x,
+              y,
             });
           return;
         }
@@ -82,8 +112,11 @@ export const FloatingSignatureBox = ({
 
   const handleSign = () => {
     // alert(pageInfo);
-    console.log("Sign action triggered!", pageInfo);
-    toast.success("Sign action triggered!", pageInfo ? {} : { description: "But position is not set." });
+    console.log('Sign action triggered!', pageInfo);
+    toast.success(
+      'Sign action triggered!',
+      pageInfo ? {} : { description: 'But position is not set.' }
+    );
     if (onSign && pageInfo) onSign(pageInfo);
   };
 
@@ -91,33 +124,39 @@ export const FloatingSignatureBox = ({
 
   useEffect(() => {
     if (dragging) {
-      window.addEventListener("mousemove", onMouseMove);
-      window.addEventListener("mouseup", onMouseUp);
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
     } else {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
     }
     return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
     };
   }, [dragging]);
 
   return (
     <div
       ref={boxRef}
-      className={`fixed z-50 border-2 bg-white/80 cursor-move shadow-lg ${outOfBounds ? "border-red-500" : "border-blue-500"
-        }`}
-      style={{ left: pos.x, top: pos.y, width: 90, height: 90 }}
+      className={`fixed z-50 border-2 bg-white/80 cursor-move shadow-lg ${
+        outOfBounds ? 'border-red-500' : 'border-blue-500'
+      }`}
+      style={{
+        left: pos.x,
+        top: `calc(${pos.y}px - ${boxHeightPx}px)`,
+        width: boxWidthPx,
+        height: boxHeightPx,
+      }}
       onMouseDown={onMouseDown}
     >
       <div className="flex flex-col items-center justify-center h-full gap-1 p-2">
         <span className="font-bold text-blue-700">Signature Box</span>
-        {/* {pageInfo && (
+        {pageInfo && (
           <span className="text-xs text-gray-700">
             Page: {pageInfo.page}, x: {pageInfo.x}, y: {pageInfo.y}
           </span>
-        )} */}
+        )}
         {!outOfBounds && (
           <button
             className="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
