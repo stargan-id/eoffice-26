@@ -12,6 +12,7 @@ import {
   createZodErrorResponse,
   getApiAuthHeaders,
   getApiBaseUrl,
+  getMockPassphrase,
   handleErrorResponse,
 } from './helpers';
 // Impor skema baru
@@ -27,6 +28,8 @@ const AUTH_HEADERS = getApiAuthHeaders();
 export async function signDocument(
   formData: FormData
 ): Promise<ActionResponse<SignDocumentResponse>> {
+  //get user info
+
   // 1. Ubah FormData menjadi objek untuk divalidasi
   const rawData = Object.fromEntries(formData.entries());
 
@@ -41,8 +44,8 @@ export async function signDocument(
   rawData.width = (parseInt(formData.get('xAxis') as string) + 100).toString();
   rawData.height = (parseInt(formData.get('yAxis') as string) + 100).toString();
   rawData.image = 'false';
-  rawData.linkQR = 'https://example.com/verify/123456';
-  rawData.passphrase = 'P@ssw0rdtte';
+  rawData.linkQR = 'https://v.stargan.id/tte/123456';
+  rawData.passphrase = getMockPassphrase();
   rawData.page = '1';
 
   // 2. Validasi dengan safeParse

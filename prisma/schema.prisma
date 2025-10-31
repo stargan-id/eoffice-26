@@ -87,6 +87,7 @@ model User {
   status                              StatusUser                          @default(ACTIVE) @map("status_aktif")
   sessions                            Session[]
   NIP                                 String?                             @unique @map("nip")
+  NIK                                 String?                             @unique @map("nik")
   organisasiId                        String?                             @map("organisasi_id")
   organisasi                          Organisasi?                         @relation(fields: [organisasiId], references: [id])
   createdBy                           String                              @default("init") @map("created_by")
