@@ -99,3 +99,17 @@ export const SignDocumentSchema = z
 export const VerifyDocumentSchema = z.object({
   signed_file: fileSchema(ACCEPTED_PDF_TYPES),
 });
+
+export const UploadSignRequestSchema = z.object({
+  file: z
+    .any()
+    .refine((files) => files?.length == 1, 'File is required.')
+    .refine(
+      (files) => files?.[0]?.size <= MAX_FILE_SIZE,
+      `Max file size is 5MB.`
+    )
+    .refine(
+      (files) => ACCEPTED_PDF_TYPES.includes(files?.[0]?.type),
+      'Only .pdf files are accepted.'
+    ),
+});

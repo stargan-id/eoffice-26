@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '../common/TableSkeleton';
 import { Pagination } from '../table/PaginationControl';
+import FormUploadSignRequest from './FormUploadSignRequest';
 import { TableSignRequestForUser } from './TableSignRequestForUser';
 
 export const ContainerTableSignRequest = () => {
@@ -29,6 +30,7 @@ export const ContainerTableSignRequest = () => {
     page * pageSize,
     (page + 1) * pageSize
   );
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const pagination: Pagination = {
     page,
@@ -47,6 +49,7 @@ export const ContainerTableSignRequest = () => {
   const handleSign = () => {
     // Logic to handle sign
     toast.success('Sign action triggered');
+    setIsUploadModalOpen(true);
   };
 
   const controls = () => {
@@ -172,6 +175,10 @@ export const ContainerTableSignRequest = () => {
           </Tabs>
         )}
       </div>
+      <FormUploadSignRequest
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+      />
     </div>
   );
 };

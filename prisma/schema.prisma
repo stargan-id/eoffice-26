@@ -852,7 +852,7 @@ model SignRequest {
   user           User              @relation(name: "SignRequestUser", fields: [userId], references: [id])
   createdAt      DateTime          @default(now()) @map("created_at")
   updatedAt      DateTime?         @updatedAt @map("updated_at")
-  Signatory      Signatory[]       @relation(name: "SignatorySignRequest")
+  signatory      Signatory[]       @relation(name: "SignatorySignRequest")
 
   @@map("sign_requests")
 }
