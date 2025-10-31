@@ -1,28 +1,33 @@
-"use client";
+'use client';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import { Archive, RefreshCcw } from "lucide-react";
-import { Pagination, PaginationControl } from "./PaginationControl";
-
+} from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import { RefreshCcw } from 'lucide-react';
+import { Fragment } from 'react';
+import { Pagination, PaginationControl } from './PaginationControl';
 
 interface TableActionBarProps {
   // You can extend this with more props as needed
-  pagination?: Pagination
+  pagination?: Pagination;
+  controls?: React.ReactNode | React.ReactNode[];
 }
 
-export const TableActionBar = ({ pagination }: TableActionBarProps) => {
+export const TableActionBar = ({
+  pagination,
+  controls,
+}: TableActionBarProps) => {
   return (
     <div className="flex items-center space-x-2 p-2 bg-white border-b border-gray-200">
       <CheckBoxFilter />
       <IconButton title="Refresh" icon={<RefreshCcw className="w-5 h-5" />} />
-      <IconButton title="Archive" icon={<Archive className="w-5 h-5" />} />
-      <PaginationControl
-        pagination={pagination}
-      />
+      {controls &&
+        (Array.isArray(controls)
+          ? controls.map((c, i) => <Fragment key={i}>{c}</Fragment>)
+          : controls)}
+      <PaginationControl pagination={pagination} />
     </div>
   );
 };
@@ -46,7 +51,7 @@ export function IconButton({
   onClick?: () => void;
   className?: string;
   icon: React.ReactNode;
-  tooltipSide?: "top" | "right" | "bottom" | "left";
+  tooltipSide?: 'top' | 'right' | 'bottom' | 'left';
 }) {
   return (
     <Tooltip>
@@ -55,7 +60,7 @@ export function IconButton({
           type="button"
           onClick={onClick}
           className={cn(
-            "inline-flex items-center justify-center rounded-md p-2 hover:bg-slate-100 transition-colors",
+            'inline-flex items-center justify-center rounded-md p-2 hover:bg-slate-100 transition-colors',
             className
           )}
           aria-label={title}

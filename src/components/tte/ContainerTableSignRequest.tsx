@@ -1,9 +1,11 @@
 'use client';
 import { getSignRequests } from '@/actions/tte/sign-request';
-import { TableActionBar } from '@/components/table/TableActionBar';
+import { IconButton, TableActionBar } from '@/components/table/TableActionBar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SignRequest, SignRequestForUser } from '@/types/tte/sign-request';
+import { Send, Signature } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { TableSkeleton } from '../common/TableSkeleton';
 import { Pagination } from '../table/PaginationControl';
 import { TableSignRequestForUser } from './TableSignRequestForUser';
@@ -37,6 +39,33 @@ export const ContainerTableSignRequest = () => {
     onSelectPage: (page: number) => setPage(page),
   };
 
+  const handleSignRequest = () => {
+    // Logic to handle new sign request
+    toast.success('New Sign Request action triggered');
+  };
+
+  const handleSign = () => {
+    // Logic to handle sign
+    toast.success('Sign action triggered');
+  };
+
+  const controls = () => {
+    return (
+      <>
+        <IconButton
+          title="Sign"
+          icon={<Signature className="w-5 h-5" />}
+          onClick={handleSign}
+        />
+        <IconButton
+          title="Request"
+          icon={<Send className="w-5 h-5" />}
+          onClick={handleSignRequest}
+        />
+      </>
+    );
+  };
+
   useEffect(() => {
     // This effect can be used to fetch data if needed
     const fetchData = async () => {
@@ -52,7 +81,7 @@ export const ContainerTableSignRequest = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <TableActionBar pagination={pagination} />
+      <TableActionBar controls={controls()} pagination={pagination} />
       <div className="flex-1 overflow-auto pb-[5rem]">
         {loading ? (
           <TableSkeleton rows={20} />
