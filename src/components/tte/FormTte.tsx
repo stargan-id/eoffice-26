@@ -1,17 +1,18 @@
-"use client";
-import { ConfirmSignDocumentSchema } from "@/zod/schema/tte";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+'use client';
+import { ConfirmSignDocumentSchema } from '@/zod/schema/tte';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const schema = ConfirmSignDocumentSchema;
 type FormValues = z.infer<typeof schema>;
 
 interface FormTteProps {
   onSubmit: (data: FormValues) => void;
+  disabled?: boolean;
 }
 
-export const FormTte = ({ onSubmit }: FormTteProps) => {
+export const FormTte = ({ onSubmit, disabled = false }: FormTteProps) => {
   const {
     register,
     handleSubmit,
@@ -20,9 +21,9 @@ export const FormTte = ({ onSubmit }: FormTteProps) => {
     setValue,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    mode: "onChange",
+    mode: 'onChange',
     defaultValues: {
-      tampilan: "visible",
+      tampilan: 'visible',
     },
   });
 
@@ -44,8 +45,9 @@ export const FormTte = ({ onSubmit }: FormTteProps) => {
           <input
             type="password"
             autoComplete="new-password"
-            {...register("passphrase")}
+            {...register('passphrase')}
             className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={disabled}
           />
           {errors.passphrase && (
             <p className="text-red-500 text-xs mt-1">
@@ -62,8 +64,9 @@ export const FormTte = ({ onSubmit }: FormTteProps) => {
               <input
                 type="radio"
                 value="visible"
-                {...register("tampilan")}
+                {...register('tampilan')}
                 className="form-radio h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                disabled={disabled}
               />
               <span className="ml-2 text-gray-700 font-medium">Visible</span>
             </label>
@@ -71,8 +74,9 @@ export const FormTte = ({ onSubmit }: FormTteProps) => {
               <input
                 type="radio"
                 value="invisible"
-                {...register("tampilan")}
+                {...register('tampilan')}
                 className="form-radio h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                disabled={disabled}
               />
               <span className="ml-2 text-gray-700 font-medium">Invisible</span>
             </label>
@@ -87,8 +91,9 @@ export const FormTte = ({ onSubmit }: FormTteProps) => {
       <button
         type="submit"
         className="w-full mt-8 px-4 py-2 bg-blue-700 text-white font-semibold rounded-lg shadow hover:bg-blue-800 transition"
+        disabled={disabled}
       >
-        Submit
+        {disabled ? 'Memproses...' : 'Submit'}
       </button>
     </form>
   );

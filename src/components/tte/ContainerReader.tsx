@@ -37,6 +37,7 @@ export const ContainerReader = ({
   const [isSignRequested, setIsSignRequested] = useState<boolean>(false);
   const [pdfFile, setPdfFile] = useState<Blob | null>(null);
   const [isFileSigned, setIsFileSigned] = useState<boolean>(false);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const schema = ConfirmSignDocumentSchema;
   type FormValues = z.infer<typeof schema>;
@@ -73,6 +74,8 @@ export const ContainerReader = ({
   };
 
   const handleOnSubmit = async (data: FormValues) => {
+    setIsProcessing(true);
+
     console.log('Form data submitted:', data);
     const v: FormValues = {
       ...values,
@@ -92,21 +95,19 @@ export const ContainerReader = ({
     // If you have file input, append file here
     // formData.append("file", fileInput.files[0]);
 
-    const res = await signDocument(signRequestId, formData);
-    //console.log('Sign document response:', res);
-
-    // nantinya simpan di lokal
-    if (!res.success) {
-      toast.error('Gagal menandatangani dokumen: ' + res.error);
-      return;
-    }
-
-    if (res.success) {
-      // // send data to API and close dialog
+    try {
+      const res = await signDocument(signRequestId, formData);
+      if (!res.success) {
+        toast.error('Gagal menandatangani dokumen: ' + res.error);
+        setIsProcessing(false);
+        return;
+      }
       setIsFileSigned(true);
       setShowConfirmation(false);
-      // setPdfFile(res.data.file);
-      // setIsSigned(true);
+    } catch (err) {
+      toast.error('Terjadi kesalahan saat memproses dokumen.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -123,8 +124,40 @@ export const ContainerReader = ({
 
   return (
     <>
-      <div id="pdf-full-viewer" className="max-w-4xl mx-auto">
+      <div id="pdf-full-viewer" className="max-w-4xl mx-auto relative">
         {pdfFile ? <PdfFullViewer file={pdfFile} /> : <PdfFullViewerSkeleton />}
+        {isProcessing && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-gray-600 bg-opacity-60 animate-pulse">
+            <div className="text-white text-lg font-semibold mb-2">
+              Dokumen sedang diproses...
+            </div>
+            <div className="text-white text-sm">
+              Mohon tunggu, file sedang diproses di server.
+            </div>
+            <div className="mt-4">
+              <svg
+                className="animate-spin h-8 w-8 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
+              </svg>
+            </div>
+          </div>
+        )}
       </div>
       {showSigningTools && pdfFile && !isFileSigned && (
         <FloatingSignatureBox
@@ -137,7 +170,7 @@ export const ContainerReader = ({
           <DialogHeader>
             <DialogTitle>Konfirmasi Tanda Tangan</DialogTitle>
           </DialogHeader>
-          <FormTte onSubmit={handleOnSubmit} />
+          <FormTte onSubmit={handleOnSubmit} disabled={isProcessing} />
         </DialogContent>
       </Dialog>
     </>

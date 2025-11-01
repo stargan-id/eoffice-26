@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '../common/TableSkeleton';
 import { Pagination } from '../table/PaginationControl';
+import FormUploadSelfSignRequest from './FormUploadSelfSignRequest';
+
 import FormUploadSignRequest from './FormUploadSignRequest';
 import { TableSignRequestForUser } from './TableSignRequestForUser';
 
@@ -30,7 +32,12 @@ export const ContainerTableSignRequest = () => {
     page * pageSize,
     (page + 1) * pageSize
   );
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [
+    isUploadSelfSignRequestModalOpen,
+    setIsUploadSelfSignRequestModalOpen,
+  ] = useState(false);
+  const [isUploadSignRequestModalOpen, setIsUploadSignRequestModalOpen] =
+    useState(false);
 
   const pagination: Pagination = {
     page,
@@ -43,13 +50,13 @@ export const ContainerTableSignRequest = () => {
 
   const handleSignRequest = () => {
     // Logic to handle new sign request
-    toast.success('New Sign Request action triggered');
+    setIsUploadSignRequestModalOpen(true);
   };
 
-  const handleSign = () => {
+  const handleSelfSignRequest = () => {
     // Logic to handle sign
     toast.success('Sign action triggered');
-    setIsUploadModalOpen(true);
+    setIsUploadSelfSignRequestModalOpen(true);
   };
 
   const controls = () => {
@@ -58,7 +65,7 @@ export const ContainerTableSignRequest = () => {
         <IconButton
           title="Sign"
           icon={<Signature className="w-5 h-5" />}
-          onClick={handleSign}
+          onClick={handleSelfSignRequest}
         />
         <IconButton
           title="Request"
@@ -175,9 +182,13 @@ export const ContainerTableSignRequest = () => {
           </Tabs>
         )}
       </div>
+      <FormUploadSelfSignRequest
+        isOpen={isUploadSelfSignRequestModalOpen}
+        onClose={() => setIsUploadSelfSignRequestModalOpen(false)}
+      />
       <FormUploadSignRequest
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
+        isOpen={isUploadSignRequestModalOpen}
+        onClose={() => setIsUploadSignRequestModalOpen(false)}
       />
     </div>
   );

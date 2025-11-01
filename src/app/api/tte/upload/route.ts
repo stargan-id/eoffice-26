@@ -1,7 +1,10 @@
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { saveFileFromFormData } from '@/lib/helpers/upload';
-import { UploadSignRequestSchema } from '@/zod/schema/tte';
+import {
+  UploadSelfSignRequestSchema,
+  UploadSignRequestSchema,
+} from '@/zod/schema/tte';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import z from 'zod';
@@ -16,10 +19,25 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
-    // Validasi menggunakan Zod
-    const validatedFields = UploadSignRequestSchema.safeParse({
-      file: file ? [file] : [], // Schema mengharapkan array
-    });
+    // Cek apakah ada signatories (multiple signers)
+    const signatories = formData.getAll('signatories');
+    let validatedFields;
+    let isMultiSign = false;
+    if (signatories.length > 0) {
+      // Validasi dengan UploadSignRequestSchema
+      validatedFields = UploadSignRequestSchema.safeParse({
+        subject: formData.get('subject') || undefined,
+        signatories,
+        file: file ? [file] : [],
+      });
+      isMultiSign = true;
+    } else {
+      // Validasi dengan UploadSelfSignRequestSchema
+      validatedFields = UploadSelfSignRequestSchema.safeParse({
+        subject: formData.get('subject') || undefined,
+        file: file ? [file] : [],
+      });
+    }
 
     if (!validatedFields.success) {
       const errorMessage = z.flattenError(validatedFields.error);
@@ -46,26 +64,64 @@ export async function POST(request: Request) {
     await saveFileFromFormData(session.user.id, file!, dailyPath, documentId);
 
     // Buat entri di database
-    const newSignRequest = await db.signRequest.create({
-      data: {
-        userId: session.user.id,
-        subject: `New Document: ${file!.name}`,
-        fileUrl: fileUrl,
-        status: 'PENDING',
-        completion: '0/1',
-        message: '',
-        notes: '',
-        signatory: {
-          create: {
-            userId: session.user.id, // Untuk demo, pemilik juga sebagai signatory
-            ordinal: 1,
-            status: 'WAITING',
-            signVisibility: 'VISIBLE',
-            notes: '',
+    let newSignRequest;
+    if (isMultiSign) {
+      // Multiple signatories
+      const multiData = validatedFields.data as z.infer<
+        typeof UploadSignRequestSchema
+      >;
+
+      console.log('Creating multi-sign sign request', multiData);
+
+      newSignRequest = await db.signRequest.create({
+        data: {
+          userId: session.user.id,
+          subject: multiData.subject
+            ? `${multiData.subject}`
+            : `Document: ${file!.name}`,
+          fileUrl: fileUrl,
+          status: 'PENDING',
+          completion: `0/${multiData.signatories.length}`,
+          message: '',
+          notes: '',
+          signatory: {
+            create: multiData.signatories.map(
+              (userId: string, idx: number) => ({
+                userId: userId,
+                ordinal: idx + 1,
+                status: 'WAITING',
+                signVisibility: 'VISIBLE',
+                notes: '',
+              })
+            ),
           },
         },
-      },
-    });
+      });
+    } else {
+      // Single signatory (self-sign)
+      newSignRequest = await db.signRequest.create({
+        data: {
+          userId: session.user.id,
+          subject: validatedFields.data.subject
+            ? `${validatedFields.data.subject}`
+            : `Document: ${file!.name}`,
+          fileUrl: fileUrl,
+          status: 'PENDING',
+          completion: '0/1',
+          message: '',
+          notes: '',
+          signatory: {
+            create: {
+              userId: session.user.id,
+              ordinal: 1,
+              status: 'WAITING',
+              signVisibility: 'VISIBLE',
+              notes: '',
+            },
+          },
+        },
+      });
+    }
 
     return NextResponse.json(
       { signRequestId: newSignRequest.id },

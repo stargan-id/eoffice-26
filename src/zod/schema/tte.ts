@@ -5,13 +5,38 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
 const ACCEPTED_PDF_TYPES = ['application/pdf'];
 
-// Helper untuk validasi file
+// Helper untuk validasi file (browser File, Node Buffer, Blob)
 const fileSchema = (types: string[]) =>
-  z
-    .instanceof(File)
-    .refine((file) => file.size > 0, 'File cannot be empty.')
-    .refine((file) => file.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
-    .refine((file) => types.includes(file.type), `Unsupported file type.`);
+  z.custom<any>(
+    (file) => {
+      if (!file) return false;
+      // Browser File/Blob
+      if (typeof File !== 'undefined' && file instanceof File) {
+        if (file.size <= 0) return false;
+        if (file.size > MAX_FILE_SIZE) return false;
+        if (!types.includes(file.type)) return false;
+        return true;
+      }
+      // Node.js Buffer
+      if (typeof Buffer !== 'undefined' && Buffer.isBuffer(file)) {
+        if (file.length <= 0) return false;
+        if (file.length > MAX_FILE_SIZE) return false;
+        // No type for Buffer, skip type check
+        return true;
+      }
+      // Blob (browser/Node)
+      if (typeof Blob !== 'undefined' && file instanceof Blob) {
+        if (file.size <= 0) return false;
+        if (file.size > MAX_FILE_SIZE) return false;
+        if (!types.includes(file.type)) return false;
+        return true;
+      }
+      return false;
+    },
+    {
+      message: 'Invalid or unsupported file type.',
+    }
+  );
 
 // Skema untuk /api/user/registrasi
 export const RegisterUserSchema = z.object({
@@ -100,7 +125,26 @@ export const VerifyDocumentSchema = z.object({
   signed_file: fileSchema(ACCEPTED_PDF_TYPES),
 });
 
+export const UploadSelfSignRequestSchema = z.object({
+  subject: z.string().optional(),
+  file: z
+    .any()
+    .refine((files) => files?.length == 1, 'File is required.')
+    .refine(
+      (files) => files?.[0]?.size <= MAX_FILE_SIZE,
+      `Max file size is 5MB.`
+    )
+    .refine(
+      (files) => ACCEPTED_PDF_TYPES.includes(files?.[0]?.type),
+      'Only .pdf files are accepted.'
+    ),
+});
+
 export const UploadSignRequestSchema = z.object({
+  subject: z.string().optional(),
+  signatories: z
+    .array(z.string().min(1, 'User ID is required.'))
+    .min(1, 'At least one signatory is required.'),
   file: z
     .any()
     .refine((files) => files?.length == 1, 'File is required.')

@@ -1,6 +1,5 @@
 'use client';
 
-import SelectUserEmailsAsync from '@/components/rbac/SelectUserEmailsAsync';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,7 +10,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { UploadSignRequestSchema } from '@/zod/schema/tte';
+import { UploadSelfSignRequestSchema } from '@/zod/schema/tte';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
@@ -20,17 +19,17 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-interface FormUploadSignRequestProps {
+interface FormUploadSelfSignRequestProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type FormValues = z.infer<typeof UploadSignRequestSchema>;
+type FormValues = z.infer<typeof UploadSelfSignRequestSchema>;
 
-export const FormUploadSignRequest = ({
+export const FormUploadSelfSignRequest = ({
   isOpen,
   onClose,
-}: FormUploadSignRequestProps) => {
+}: FormUploadSelfSignRequestProps) => {
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -40,9 +39,8 @@ export const FormUploadSignRequest = ({
     handleSubmit,
     formState: { errors },
     reset,
-    control,
   } = useForm<FormValues>({
-    resolver: zodResolver(UploadSignRequestSchema),
+    resolver: zodResolver(UploadSelfSignRequestSchema),
   });
 
   const onSubmit = async (data: FormValues) => {
@@ -52,10 +50,6 @@ export const FormUploadSignRequest = ({
     const formData = new FormData();
     formData.append('file', data.file[0]);
     if (data.subject) formData.append('subject', data.subject);
-    // Append signatories as multiple entries
-    data.signatories.forEach((userId) =>
-      formData.append('signatories', userId)
-    );
 
     try {
       const response = await axios.post('/api/tte/upload', formData, {
@@ -120,22 +114,6 @@ export const FormUploadSignRequest = ({
               </p>
             )}
           </div>
-
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="signatories">Signatories</Label>
-            <SelectUserEmailsAsync
-              name="signatories"
-              control={control}
-              label={undefined}
-              rules={{ required: 'Signatory email is required' }}
-            />
-            {errors.signatories && (
-              <p className="text-sm text-red-500 mt-1">
-                {errors.signatories.message as string}
-              </p>
-            )}
-          </div>
-
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="file">Dokumen PDF</Label>
             <Input
@@ -178,4 +156,4 @@ export const FormUploadSignRequest = ({
     </Dialog>
   );
 };
-export default FormUploadSignRequest;
+export default FormUploadSelfSignRequest;
