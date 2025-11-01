@@ -86,8 +86,8 @@ model User {
   image                               String?
   status                              StatusUser                          @default(ACTIVE) @map("status_aktif")
   sessions                            Session[]
-  NIP                                 String?                             @unique @map("nip")
-  NIK                                 String?                             @unique @map("nik")
+  nip                                 String?                             @unique @map("nip")
+  nik                                 String?                             @unique @map("nik")
   organisasiId                        String?                             @map("organisasi_id")
   organisasi                          Organisasi?                         @relation(fields: [organisasiId], references: [id])
   createdBy                           String                              @default("init") @map("created_by")
@@ -846,6 +846,7 @@ model SignRequest {
   notes          String
   userId         String            @map("user_id")
   fileUrl        String            @default("") @map("file_url")
+  signedFileUrl  String?           @map("signed_file_url")
   status         SignRequestStatus
   completion     String // 1/5, 2/5, etc. lihat dari signatories
   eksternalRefId String?           @map("eksternal_ref_id")

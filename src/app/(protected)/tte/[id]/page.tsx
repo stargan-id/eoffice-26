@@ -42,7 +42,7 @@ export const TteIdPage = async ({
 
   return (
     <ProtectedLayout title="Tanda Tangan Elektronik">
-      <ContainerReader documentId={id} showSigningTools={showSigningTools} />
+      <ContainerReader signRequestId={id} showSigningTools={showSigningTools} />
     </ProtectedLayout>
   );
 };

@@ -62,7 +62,7 @@ export const FormUploadSignRequest = ({
       });
 
       toast.success('Document uploaded successfully!');
-      router.push(`/tte/${response.data.documentId}`);
+      router.push(`/tte/${response.data.signRequestId}`);
     } catch (error: unknown) {
       let errorMessage = 'Upload failed. Please try again.';
       if (axios.isAxiosError(error)) {

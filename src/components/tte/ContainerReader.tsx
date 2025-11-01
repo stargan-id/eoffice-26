@@ -18,24 +18,25 @@ import { ConfirmSignDocumentSchema } from '@/zod/schema/tte';
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 //import { FloatingPdfViewer } from "./FloatingPdfViewer";
-import { getPdfDocument } from '@/actions/tte/document';
+import { toast } from 'sonner';
 import FloatingSignatureBox from './FloatingSignatureBox';
 import { FormTte } from './FormTte';
 // import { PdfFullViewerSkeleton } from "./PdfFullViewer";
 
 interface ContainerReaderProps {
-  documentId: string;
+  signRequestId: string;
   showSigningTools: boolean;
 }
 
 export const ContainerReader = ({
-  documentId,
+  signRequestId,
   showSigningTools,
 }: ContainerReaderProps) => {
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [isSigned, setIsSigned] = useState<boolean>(!showSigningTools);
   const [isSignRequested, setIsSignRequested] = useState<boolean>(false);
   const [pdfFile, setPdfFile] = useState<Blob | null>(null);
+  const [isFileSigned, setIsFileSigned] = useState<boolean>(false);
 
   const schema = ConfirmSignDocumentSchema;
   type FormValues = z.infer<typeof schema>;
@@ -91,13 +92,18 @@ export const ContainerReader = ({
     // If you have file input, append file here
     // formData.append("file", fileInput.files[0]);
 
-    const res = await signDocument(formData);
+    const res = await signDocument(signRequestId, formData);
     //console.log('Sign document response:', res);
 
     // nantinya simpan di lokal
+    if (!res.success) {
+      toast.error('Gagal menandatangani dokumen: ' + res.error);
+      return;
+    }
 
     if (res.success) {
       // // send data to API and close dialog
+      setIsFileSigned(true);
       setShowConfirmation(false);
       // setPdfFile(res.data.file);
       // setIsSigned(true);
@@ -105,21 +111,22 @@ export const ContainerReader = ({
   };
 
   useEffect(() => {
-    const pdfDocument = async () => {
-      const response = await getPdfDocument(documentId);
-      if (response.success) {
-        setPdfFile(response.data);
+    const fetchPdf = async () => {
+      const response = await fetch(`/api/tte/document/${signRequestId}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        setPdfFile(blob);
       }
     };
-    pdfDocument();
-  }, [documentId]);
+    fetchPdf();
+  }, [signRequestId, isFileSigned]);
 
   return (
     <>
       <div id="pdf-full-viewer" className="max-w-4xl mx-auto">
         {pdfFile ? <PdfFullViewer file={pdfFile} /> : <PdfFullViewerSkeleton />}
       </div>
-      {showSigningTools && pdfFile && (
+      {showSigningTools && pdfFile && !isFileSigned && (
         <FloatingSignatureBox
           pdfContainerId="pdf-full-viewer"
           onSign={handleOnSign}

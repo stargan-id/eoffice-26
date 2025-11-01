@@ -1,7 +1,10 @@
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
+import { saveFileFromFormData } from '@/lib/helpers/upload';
 import { UploadSignRequestSchema } from '@/zod/schema/tte';
 import { NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
+import z from 'zod';
 
 export async function POST(request: Request) {
   try {
@@ -19,22 +22,35 @@ export async function POST(request: Request) {
     });
 
     if (!validatedFields.success) {
-      const errorMessage =
-        validatedFields.error.flatten().fieldErrors.file?.[0] ||
-        'Invalid file.';
+      const errorMessage = z.flattenError(validatedFields.error);
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
+    // Buat path penyimpanan berdasarkan tanggal
+    const now = new Date();
+    const year = now.getFullYear();
+    // Example: '2025110114' for Nov 1, 2025, 14:00
+    const timebasedPath = `${now.getFullYear()}${(now.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}${now
+      .getHours()
+      .toString()
+      .padStart(2, '0')}`;
+    const dailyPath = `/documents/${year}/${timebasedPath}`;
 
-    // Simulasi upload ke cloud storage (misal: S3, Google Cloud Storage)
-    // Di aplikasi nyata, Anda akan mengunggah file dan mendapatkan URL-nya.
-    const simulatedFileUrl = `/uploads/documents/${Date.now()}-${file!.name}`;
+    // generate random document ID use uuid like '550e8400-e29b-41d4-a716-446655440000'
+    const documentId = uuidv4() + '.pdf';
+    const fileUrl = `${dailyPath}/${documentId}`;
+
+    // try to save file and then buat entri di database
+
+    await saveFileFromFormData(session.user.id, file!, dailyPath, documentId);
 
     // Buat entri di database
     const newSignRequest = await db.signRequest.create({
       data: {
         userId: session.user.id,
         subject: `New Document: ${file!.name}`,
-        fileUrl: simulatedFileUrl,
+        fileUrl: fileUrl,
         status: 'PENDING',
         completion: '0/1',
         message: '',
@@ -52,7 +68,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(
-      { documentId: newSignRequest.id },
+      { signRequestId: newSignRequest.id },
       { status: 201 }
     );
   } catch (error) {

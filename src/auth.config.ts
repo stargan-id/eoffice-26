@@ -1,14 +1,14 @@
-import { getUser, getUserRoles } from "@/lib/services/user";
-import bcrypt from "bcryptjs"; // Import bcrypt for password hashing and comparison
-import type { NextAuthConfig } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import { LoginSchema } from "./zod/schema/login";
+import { getUser, getUserRoles } from '@/lib/services/user';
+import bcrypt from 'bcryptjs'; // Import bcrypt for password hashing and comparison
+import type { NextAuthConfig } from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import { LoginSchema } from './zod/schema/login';
 
 export default {
   trustHost: true,
   pages: {
-    signIn: "/signin",
-    signOut: "/signout",
+    signIn: '/signin',
+    signOut: '/signout',
   },
 
   providers: [
@@ -16,8 +16,8 @@ export default {
       // You can specify which fields should be submitted, by adding keys to the `credentials` object.
       // e.g. domain, username, password, 2FA token, etc.
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         //validate against the schema
@@ -40,7 +40,7 @@ export default {
           // logic to salt and hash password
           const isValidPassword = await bcrypt.compare(
             password,
-            user.password?.toString() || ""
+            user.password?.toString() || ''
           );
 
           if (!isValidPassword) {
@@ -84,7 +84,8 @@ export default {
       //console.log("[session] user", user);
       session.user.id = token.sub as string;
       session.user.name = token.name;
-      // session.user.nip = token.nip as string;
+      session.user.nik = token.nik as string;
+      session.user.nip = token.nip as string;
       // session.user.unitKerjaId = token.unitKerjaId as string;
       // session.user.unitKerjaNama = token.unitKerjaNama as string;
       // session.user.unitKerjaNamaSingkat = token.unitKerjaNamaSingkat as string;
@@ -99,10 +100,11 @@ export default {
       //console.log("[jwt] token", token);
       //console.log("[jwt] account", account);
       if (user) {
-        console.log("[jwt] user", user);
+        console.log('[jwt] user', user);
         token.id = user.id;
         token.name = user.name;
-        // token.nip = user.nip;
+        token.nik = user.nik;
+        token.nip = user.nip;
         // token.unitKerjaId = user.unitKerjaId;
         // token.unitKerjaNama = user.unitKerjaNama;
         // token.unitKerjaNamaSingkat = user.unitKerjaNamaSingkat;
