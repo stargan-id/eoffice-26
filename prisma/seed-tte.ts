@@ -23,7 +23,7 @@ async function main() {
         notes: faker.lorem.words(3),
         userId: user.id,
         fileUrl: faker.internet.url(),
-        status: 'PENDING',
+        status: 'WAITING',
         completion: `0/1`,
       },
     });

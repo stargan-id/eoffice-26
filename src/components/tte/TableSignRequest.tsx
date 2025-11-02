@@ -1,6 +1,6 @@
 'use client';
 import { cn } from '@/lib/utils';
-import { SignRequestForUser } from '@/types/tte/sign-request';
+import { SignRequest } from '@/types/tte/sign-request';
 import {
   ColumnDef,
   flexRender,
@@ -10,7 +10,7 @@ import {
 } from '@tanstack/react-table';
 import { useRouter } from 'next/dist/client/components/navigation';
 
-const columns: ColumnDef<SignRequestForUser>[] = [
+const columns: ColumnDef<SignRequest>[] = [
   { accessorKey: 'user.name', header: 'Pengirim' },
   { accessorKey: 'subject', header: 'Subjek' },
   {
@@ -23,17 +23,15 @@ const columns: ColumnDef<SignRequestForUser>[] = [
         year: 'numeric',
       }),
   },
-  { accessorKey: 'signatory.status', header: 'Status' },
+  { accessorKey: 'status', header: 'Status Dokumen' },
 ];
 
-type TableSignRequestForUserProps = {
-  data: SignRequestForUser[];
-  onChangePage?: (table: Table<SignRequestForUser>, page: number) => void;
+type TableSignRequestProps = {
+  data: SignRequest[];
+  onChangePage?: (table: Table<SignRequest>, page: number) => void;
 };
 
-export const TableSignRequestForUser = ({
-  data,
-}: TableSignRequestForUserProps) => {
+export const TableSignRequest = ({ data }: TableSignRequestProps) => {
   const table = useReactTable({
     data,
     columns,

@@ -832,7 +832,7 @@ model Agenda {
 }
 
 enum SignRequestStatus {
-  PENDING
+  WAITING
   IN_PROGRESS // for multiple signatories
   COMPLETED
   FAILED
@@ -860,9 +860,11 @@ model SignRequest {
 
 enum SigningStatus {
   WAITING
+  IN_PROGRESS // klo pake event listener
   SIGNED
   REJECTED
   EXPIRED
+  FAILED
 }
 
 enum SignVisibility {

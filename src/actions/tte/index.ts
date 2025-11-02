@@ -14,7 +14,6 @@ import {
   createZodErrorResponse,
   getApiAuthHeaders,
   getApiBaseUrl,
-  getMockPassphrase,
   handleErrorResponse,
 } from './helpers';
 import { getSignRequestForUser } from './sign-request';
@@ -87,8 +86,8 @@ export async function signDocument(
     rawData.height = (parseInt(rawData.yAxis as string) + 100).toString();
     rawData.image = 'false';
     rawData.linkQR = 'https://v.stargan.id/tte/123456';
-    rawData.passphrase = getMockPassphrase();
-    rawData.page = '1';
+    // rawData.passphrase = getMockPassphrase();
+    // rawData.page = '1';
 
     // Validate input
     const validation = SignDocumentSchema.safeParse(rawData);
@@ -98,7 +97,9 @@ export async function signDocument(
     }
 
     // Build new FormData from validated data
-    const formData = buildFormData(validation.data);
+    const formData = buildFormData(
+      validation.data as Record<string, string | Blob | undefined>
+    );
 
     // Send request
     console.log('Sending sign document request to API:', BASE_URL);

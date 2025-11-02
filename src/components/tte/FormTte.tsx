@@ -36,6 +36,7 @@ export const FormTte = ({ onSubmit, disabled = false }: FormTteProps) => {
     <form
       className="bg-white rounded-xl w-full p-2 space-y-8 max-w-lg mx-auto"
       onSubmit={handleSubmit(onSubmit)}
+      autoComplete="off"
     >
       <div className="space-y-6">
         <div>

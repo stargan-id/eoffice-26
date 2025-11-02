@@ -2,12 +2,13 @@
 import { auth } from '@/auth';
 import {
   getSignRequestForUser as getSignRequestForUserService,
-  getSignRequestsForUser,
+  getSignRequestsByOrForUser as getSignRequestsByOrForUserService,
+  getSignRequestsForUser as getSignRequestsForUserService,
 } from '@/lib/services/tte';
 import { ActionResponse } from '@/types/action-response.types';
-import { SignRequestForUser } from '@/types/tte/sign-request';
+import { SignRequest, SignRequestForUser } from '@/types/tte/sign-request';
 
-export const getSignRequests = async (): Promise<
+export const getSignRequestsForUser = async (): Promise<
   ActionResponse<SignRequestForUser[]>
 > => {
   // implementasi pengambilan daftar sign request dari backend
@@ -22,7 +23,7 @@ export const getSignRequests = async (): Promise<
   console.log('Fetching sign requests for user:', session.user);
 
   try {
-    const result = await getSignRequestsForUser(session.user.id);
+    const result = await getSignRequestsForUserService(session.user.id);
     return {
       success: true,
       data: result,
@@ -61,4 +62,31 @@ export const getSignRequestForUser = async (
   };
 };
 
-export default getSignRequests;
+export const getSignRequestsByOrForUser = async (): Promise<
+  ActionResponse<SignRequest[]>
+> => {
+  // implementasi pengambilan daftar sign request dari backend
+
+  const session = await auth();
+  if (!session?.user)
+    return {
+      success: false,
+      error: 'Unauthorized',
+    };
+
+  console.log('Fetching sign requests by or for user:', session.user);
+
+  try {
+    const result = await getSignRequestsByOrForUserService(session.user.id);
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (e) {
+    console.log('Error fetching sign requests by or for user:', e);
+    return {
+      success: false,
+      error: 'Failed to fetch sign requests',
+    };
+  }
+};

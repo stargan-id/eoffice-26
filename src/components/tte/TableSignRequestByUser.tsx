@@ -26,14 +26,14 @@ const columns: ColumnDef<SignRequestForUser>[] = [
   { accessorKey: 'signatory.status', header: 'Status' },
 ];
 
-type TableSignRequestForUserProps = {
+type TableSignRequestByUserProps = {
   data: SignRequestForUser[];
   onChangePage?: (table: Table<SignRequestForUser>, page: number) => void;
 };
 
-export const TableSignRequestForUser = ({
+export const TableSignRequestByUser = ({
   data,
-}: TableSignRequestForUserProps) => {
+}: TableSignRequestByUserProps) => {
   const table = useReactTable({
     data,
     columns,

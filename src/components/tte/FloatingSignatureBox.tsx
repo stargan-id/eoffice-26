@@ -22,13 +22,13 @@ export const FloatingSignatureBox = ({
   const boxRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [pos, setPos] = useState({ x: 100, y: 100 });
+  const [pos, setPos] = useState({ x: 100, y: 200 });
   const [pageInfo, setPageInfo] = useState<{
     page: number;
     x: number;
     y: number;
   } | null>(null);
-  const [outOfBounds, setOutOfBounds] = useState(false);
+  const [outOfBounds, setOutOfBounds] = useState(true);
 
   const PDF_WIDTH_PT = 8.27 * 72; // 596 points (A4 width)
   const PDF_HEIGHT_PT = 11.69 * 72; // 841 points (A4 height)
@@ -150,12 +150,15 @@ export const FloatingSignatureBox = ({
       }}
       onMouseDown={onMouseDown}
     >
-      <div className="flex flex-col items-center justify-center h-full gap-1 p-2">
-        <span className="font-bold text-blue-700">Signature Box</span>
+      <div className="flex flex-col items-center justify-center h-full gap-1 p-1">
+        <span className="font-bold text-blue-700">Posisi TTE</span>
         {pageInfo && (
-          <span className="text-xs text-gray-700">
-            Page: {pageInfo.page}, x: {pageInfo.x}, y: {pageInfo.y}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-xs text-gray-700">Page: {pageInfo.page}</span>
+            <span className="text-xs text-gray-700">
+              x: {pageInfo.x}, y: {pageInfo.y}
+            </span>
+          </div>
         )}
         {!outOfBounds && (
           <button

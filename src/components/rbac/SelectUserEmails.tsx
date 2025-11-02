@@ -20,8 +20,12 @@ export const SelectUserEmails = ({
     setInput(value);
     if (value.length >= 2) {
       setLoading(true);
-      const emails = await getUserEmailsByPrefix(value);
-      setOptions(emails);
+      const response = await getUserEmailsByPrefix(value);
+      if (response.success && response.data) {
+        setOptions(response.data.map((u) => u.email));
+      } else {
+        setOptions([]);
+      }
       setLoading(false);
     } else {
       setOptions([]);

@@ -80,7 +80,7 @@ export async function POST(request: Request) {
             ? `${multiData.subject}`
             : `Document: ${file!.name}`,
           fileUrl: fileUrl,
-          status: 'PENDING',
+          status: 'WAITING',
           completion: `0/${multiData.signatories.length}`,
           message: '',
           notes: '',
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
             ? `${validatedFields.data.subject}`
             : `Document: ${file!.name}`,
           fileUrl: fileUrl,
-          status: 'PENDING',
+          status: 'WAITING',
           completion: '0/1',
           message: '',
           notes: '',

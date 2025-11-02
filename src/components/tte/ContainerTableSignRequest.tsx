@@ -1,16 +1,20 @@
 'use client';
-import { getSignRequests } from '@/actions/tte/sign-request';
 import { IconButton, TableActionBar } from '@/components/table/TableActionBar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SignRequest, SignRequestForUser } from '@/types/tte/sign-request';
-import { Send, Signature } from 'lucide-react';
+import { CheckCircle, Mail, Send, Signature, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '../common/TableSkeleton';
 import { Pagination } from '../table/PaginationControl';
 import FormUploadSelfSignRequest from './FormUploadSelfSignRequest';
 
+import {
+  getSignRequestsByOrForUser,
+  getSignRequestsForUser,
+} from '@/actions/tte/sign-request';
 import FormUploadSignRequest from './FormUploadSignRequest';
+import { TableSignRequest } from './TableSignRequest';
 import { TableSignRequestForUser } from './TableSignRequestForUser';
 
 export const ContainerTableSignRequest = () => {
@@ -20,9 +24,8 @@ export const ContainerTableSignRequest = () => {
   const [dataSignRequestsByUser, setDataSignRequestsByUser] = useState<
     SignRequest[]
   >([]);
-  const [dataSignRequestsSelf, setDataSignRequestsSelf] = useState<
-    SignRequest[]
-  >([]);
+  const [dataSignRequestsByOrForUser, setDataSignRequestsByOrForUser] =
+    useState<SignRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const pageSize = 20;
@@ -32,6 +35,12 @@ export const ContainerTableSignRequest = () => {
     page * pageSize,
     (page + 1) * pageSize
   );
+
+  const pagedDataSignRequestsByOrForUser = dataSignRequestsByOrForUser.slice(
+    page * pageSize,
+    (page + 1) * pageSize
+  );
+
   const [
     isUploadSelfSignRequestModalOpen,
     setIsUploadSelfSignRequestModalOpen,
@@ -80,10 +89,17 @@ export const ContainerTableSignRequest = () => {
     // This effect can be used to fetch data if needed
     const fetchData = async () => {
       // Simulate data fetching
-      const result = await getSignRequests();
+      const result = await getSignRequestsForUser();
       if (result.success) {
         setDataSignRequestForUser(result.data);
       }
+
+      const resultByOrForUser = await getSignRequestsByOrForUser();
+
+      if (resultByOrForUser.success) {
+        setDataSignRequestsByOrForUser(resultByOrForUser.data);
+      }
+
       setLoading(false);
     };
     fetchData();
@@ -102,72 +118,40 @@ export const ContainerTableSignRequest = () => {
                 value="all"
                 className="tabs-trigger h-12 min-w-[120px] max-w-[220px] px-4 pb-2 flex items-center justify-start gap-2 text-gray-700 font-medium bg-transparent rounded-none shadow-none ring-0 transition-colors"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
+                <Mail className="w-5 h-5" />
                 Semua
               </TabsTrigger>
               <TabsTrigger
                 value="pending"
                 className="tabs-trigger h-12 min-w-[120px] max-w-[220px] px-4 pb-2 flex items-center justify-start gap-2 text-gray-700 font-medium bg-transparent rounded-none shadow-none ring-0 transition-colors"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                Menunggu
+                <Timer className="w-5 h-5" />
+                Menunggu TTE
               </TabsTrigger>
               <TabsTrigger
                 value="done"
                 className="tabs-trigger h-12 min-w-[120px] max-w-[220px] px-4 pb-2 flex items-center justify-start gap-2 text-gray-700 font-medium bg-transparent rounded-none shadow-none ring-0 transition-colors"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                Selesai
+                <CheckCircle className="w-5 h-5" />
+                TTE Selesai
+              </TabsTrigger>
+              <TabsTrigger
+                value="completed"
+                className="tabs-trigger h-12 min-w-[120px] max-w-[220px] px-4 pb-2 flex items-center justify-start gap-2 text-gray-700 font-medium bg-transparent rounded-none shadow-none ring-0 transition-colors"
+              >
+                <CheckCircle className="w-5 h-5" />
+                Dokumen Selesai
               </TabsTrigger>
             </TabsList>
             <TabsContent value="all" className="h-full">
-              <TableSignRequestForUser data={pagedData} />
+              <TableSignRequest data={pagedDataSignRequestsByOrForUser} />
             </TabsContent>
             <TabsContent value="pending" className="h-full">
               {/* Filter pagedData for waiting/in progress status */}
               <TableSignRequestForUser
                 data={pagedData.filter(
                   (item) =>
-                    item.status === 'PENDING' || item.status === 'IN_PROGRESS'
+                    item.status === 'WAITING' || item.status === 'IN_PROGRESS'
                 )}
               />
             </TabsContent>
@@ -176,6 +160,14 @@ export const ContainerTableSignRequest = () => {
               <TableSignRequestForUser
                 data={pagedData.filter((item) =>
                   ['COMPLETED', 'FAILED', 'CANCELLED'].includes(item.status)
+                )}
+              />
+            </TabsContent>
+            <TabsContent value="completed" className="h-full">
+              {/* Filter pagedData for waiting/in progress status */}
+              <TableSignRequest
+                data={pagedDataSignRequestsByOrForUser.filter((item) =>
+                  ['COMPLETED', 'CANCELLED', 'FAILED'].includes(item.status)
                 )}
               />
             </TabsContent>

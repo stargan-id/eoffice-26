@@ -14,6 +14,21 @@ export const getSignRequests = async (): Promise<SignRequest[]> => {
             email: true,
           },
         },
+        signatory: {
+          select: {
+            id: true,
+            userId: true,
+            status: true,
+            signedAt: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
     return result;
@@ -39,12 +54,114 @@ export const getSignRequestsByUser = async (
             email: true,
           },
         },
+        signatory: {
+          select: {
+            id: true,
+            userId: true,
+            status: true,
+            signedAt: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
     return result;
   } catch (e) {
     console.log('Error fetching sign requests for user:', e);
     throw new Error('Failed to fetch sign requests for user');
+  }
+};
+
+/**
+ * Mengambil semua SignRequest yang userId adalah owner atau signatory
+ */
+export const getSignRequestsByOrForUser = async (
+  userId: string
+): Promise<SignRequest[]> => {
+  try {
+    // Ambil sign requests dimana user adalah owner
+    const ownedRequests = await db.signRequest.findMany({
+      where: {
+        userId: userId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        signatory: {
+          select: {
+            id: true,
+            userId: true,
+            status: true,
+            signedAt: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Ambil sign requests dimana user adalah signatory
+    const signatoryRequests = await db.signRequest.findMany({
+      where: {
+        signatory: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        signatory: {
+          select: {
+            id: true,
+            userId: true,
+            status: true,
+            signedAt: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Gabungkan dan hapus duplikat berdasarkan id
+    const allRequests = [...ownedRequests, ...signatoryRequests];
+    const uniqueRequests = allRequests.filter(
+      (request, index, self) =>
+        index === self.findIndex((r) => r.id === request.id)
+    );
+
+    return uniqueRequests;
+  } catch (e) {
+    console.log('Error fetching sign requests by or for user:', e);
+    throw new Error('Failed to fetch sign requests by or for user');
   }
 };
 
@@ -135,6 +252,21 @@ export const getSignRequestById = async (
             id: true,
             name: true,
             email: true,
+          },
+        },
+        signatory: {
+          select: {
+            id: true,
+            userId: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            status: true,
+            signedAt: true,
           },
         },
       },
